@@ -1,0 +1,17 @@
+﻿@page "/vacaciones/registro/{Id:int}"
+@rendermode InteractiveServer
+
+@using SistemaNominaADC.Presentacion.Components.Base
+
+<RegistroBase Titulo="Solicitud de Vacaciones"
+              RutaRetorno="/vacaciones">
+
+    <p>ID recibido: @Id</p>
+    <p>Pantalla de registro en construcción.</p>
+
+</RegistroBase>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+}

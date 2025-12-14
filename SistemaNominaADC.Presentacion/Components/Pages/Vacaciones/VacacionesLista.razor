@@ -1,0 +1,35 @@
+﻿@page "/vacaciones"
+@rendermode InteractiveServer
+
+@using SistemaNominaADC.Presentacion.Components.Base
+
+@inject NavigationManager Navigation
+
+<ListaBase Titulo="Solicitudes de Vacaciones"
+           OnNuevo="IrANuevo">
+
+    <table>
+        <tbody>
+            <tr @onclick="() => AbrirRegistro(1)" style="cursor:pointer">
+                <td>Solicitud #1</td>
+            </tr>
+            <tr @onclick="() => AbrirRegistro(2)" style="cursor:pointer">
+                <td>Solicitud #2</td>
+            </tr>
+        </tbody>
+    </table>
+
+</ListaBase>
+
+@code {
+    void AbrirRegistro(int id)
+    {
+        Navigation.NavigateTo($"/vacaciones/registro/{id}");
+    }
+
+    void IrANuevo()
+    {
+        Navigation.NavigateTo("/vacaciones/registro/0");
+    }
+}
+

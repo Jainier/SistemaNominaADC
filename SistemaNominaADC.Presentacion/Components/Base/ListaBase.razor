@@ -1,0 +1,17 @@
+﻿@inherits ListaBaseComponent
+
+<div class="lista-contenedor">
+
+    <div class="lista-header">
+        <h3>@Titulo</h3>
+
+        <button @onclick="OnNuevoClick">
+            Nuevo registro
+        </button>
+    </div>
+
+    <div class="lista-contenido">
+        @ChildContent
+    </div>
+
+</div>

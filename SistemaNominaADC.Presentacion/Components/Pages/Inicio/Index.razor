@@ -1,0 +1,14 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+<h3>Contador</h3>
+
+<button @onclick="IncrementarContador">Contador: Has hecho click @currentCount</button>
+@code {
+    private int currentCount = 0;
+
+    private void IncrementarContador()
+    {
+        currentCount++;
+    }
+}

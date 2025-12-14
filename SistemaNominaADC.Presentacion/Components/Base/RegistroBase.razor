@@ -1,0 +1,17 @@
+﻿@inherits RegistroBaseComponent
+
+<div class="registro-contenedor">
+
+    <h3>@Titulo</h3>
+
+    <div class="registro-contenido">
+        @ChildContent
+    </div>
+
+    <div class="registro-acciones">
+        <button @onclick="Volver">
+            Volver
+        </button>
+    </div>
+
+</div>
