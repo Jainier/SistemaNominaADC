@@ -1,0 +1,63 @@
+﻿@page "/mantenimientos/estados"
+@rendermode InteractiveServer
+
+@if (mostrarFormulario)
+{
+    <FormularioMantenimiento Titulo="@tituloFormulario" Modelo="estadoActual"
+                             OnValidSubmit="Guardar" OnCancelar="Cancelar">
+        <EditorTemplate Context="est">
+            <div class="mb-3">
+                <label>Código Interno</label>
+                <InputNumber class="form-control" @bind-Value="est.Codigo" />
+            </div>
+            <div class="mb-3">
+                <label>Nombre del Estado</label>
+                <InputText class="form-control" @bind-Value="est.Nombre" />
+            </div>
+            <div class="mb-3">
+                <label>Descripción</label>
+                <InputTextArea class="form-control" @bind-Value="est.Descripcion" />
+            </div>
+            <div class="form-check mb-3">
+                <InputCheckbox class="form-check-input" @bind-Value="est.EstadoActivo" id="chkActivo" />
+                <label class="form-check-label" for="chkActivo">Estado Habilitado para el Sistema</label>
+            </div>
+
+        </EditorTemplate>
+    </FormularioMantenimiento>
+}
+else
+{
+    @* MODO LISTA *@
+    <div class="mb-3">
+        <button class="btn btn-primary" @onclick="Crear">
+            <i class="bi bi-plus-circle"></i> Nuevo Estado
+        </button>
+    </div>
+
+    @if (listaEstados == null)
+    {
+        <div class="alert alert-info">Cargando estados...</div>
+    }
+    else
+    {
+        <TablaMantenimiento TItem="Estado" Items="listaEstados" OnRowClick="Editar">
+            <HeaderTemplate>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>¿Activo?</th>
+            </HeaderTemplate>
+            <RowTemplate Context="item">
+                <td>@item.Codigo</td>
+                <td>@item.Nombre</td>
+                <td>@item.Descripcion</td>
+                <td>
+                    <span class="badge @(item.EstadoActivo == true ? "bg-success" : "bg-danger")">
+                        @(item.EstadoActivo == true ? "Sí" : "No")
+                    </span>
+                </td>
+            </RowTemplate>
+        </TablaMantenimiento>
+    }
+}

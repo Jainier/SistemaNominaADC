@@ -1,0 +1,132 @@
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using SistemaNominaADC.Presentacion.Components;
+using SistemaNominaADC.Presentacion.Components.Account;
+using SistemaNominaADC.Datos;
+using SistemaNominaADC.Entidades;
+using SistemaNominaADC.Negocio.Interfaces;
+using SistemaNominaADC.Negocio.Servicios;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
+
+builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddScoped<IdentityUserAccessor>();
+builder.Services.AddScoped<IdentityRedirectManager>();
+builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultScheme = IdentityConstants.ApplicationScheme;
+        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+    })
+    .AddIdentityCookies();
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(connectionString));
+builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddRoles<IdentityRole>() 
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddSignInManager()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+
+//Servicios de CRUD
+builder.Services.AddScoped<IDepartamentoService, DepartamentoService>();
+builder.Services.AddScoped<IEstadoService, EstadoService>();
+builder.Services.AddScoped<IObjetoSistemaService, ObjetoSistemaService>();
+builder.Services.AddScoped<IGrupoEstadoService, GrupoEstadoService>();
+
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseMigrationsEndPoint();
+}
+else
+{
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+
+app.UseStaticFiles();
+app.UseAntiforgery();
+
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode();
+
+// Add additional endpoints required by the Identity /Account Razor components.
+app.MapAdditionalIdentityEndpoints();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+
+        // 1. Definir los roles que tu sistema de nómina necesita
+        string[] roleNames = { "Administrador", "Recursos Humanos", "Empleado" };
+
+        foreach (var roleName in roleNames)
+        {
+            var roleExist = await roleManager.RoleExistsAsync(roleName);
+            if (!roleExist)
+            {
+                // Crea los roles en la tabla AspNetRoles
+                await roleManager.CreateAsync(new IdentityRole(roleName));
+            }
+        }
+
+        // 2. Crear un usuario Administrador por defecto (opcional pero recomendado)
+        var adminEmail = "admin@admin.com";
+        var user = await userManager.FindByEmailAsync(adminEmail);
+
+        if (user == null)
+        {
+            var adminUser = new ApplicationUser
+            {
+                UserName = adminEmail,
+                Email = adminEmail,
+                EmailConfirmed = true
+            };
+
+            var createPowerUser = await userManager.CreateAsync(adminUser, "Admin123*");
+            if (createPowerUser.Succeeded)
+            {
+                // Asignar el rol de Administrador al usuario creado
+                await userManager.AddToRoleAsync(adminUser, "Administrador");
+            }
+            else
+            {
+                // ESTO TE DIRÁ POR QUÉ FALLÓ:
+                foreach (var error in createPowerUser.Errors)
+                {
+                    Console.WriteLine($"Error creando usuario: {error.Description}");
+                    // O usa un Debug.WriteLine o un breakpoint aquí
+                }
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Ocurrió un error al sembrar la base de datos.");
+    }
+}
+
+app.Run();

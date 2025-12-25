@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace SistemaNominaADC.Presentacion.Core
+namespace SistemaNominaADC.Presentacion_Old.Core
 {
     public static class ModuloProvider
     {

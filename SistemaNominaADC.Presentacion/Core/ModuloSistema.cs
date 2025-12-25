@@ -1,4 +1,4 @@
-﻿namespace SistemaNominaADC.Presentacion.Core
+﻿namespace SistemaNominaADC.Presentacion_Old.Core
 {
     public class ModuloSistema
     {

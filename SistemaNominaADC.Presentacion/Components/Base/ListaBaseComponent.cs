@@ -1,4 +1,4 @@
-﻿namespace SistemaNominaADC.Presentacion.Components.Base
+﻿namespace SistemaNominaADC.Presentacion_Old.Components.Base
 {
     using Microsoft.AspNetCore.Components;
 

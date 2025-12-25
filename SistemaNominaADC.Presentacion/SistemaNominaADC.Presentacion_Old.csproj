@@ -6,4 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Include="..\SistemaNominaADC.Presentacion2\Components\Shared\Component.razor" Link="Component.razor" />
+  </ItemGroup>
+
 </Project>

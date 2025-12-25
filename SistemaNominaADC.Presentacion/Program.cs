@@ -1,6 +1,27 @@
-using SistemaNominaADC.Presentacion.Components;
+using Microsoft.AspNetCore.Components.Authorization;
+using SistemaNominaADC.Presentacion_Old.Components;
+using SistemaNominaADC.Presentacion_Old.Core.Security;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+builder.Services.AddAuthentication("Cookies")
+    .AddCookie("Cookies", options =>
+    {
+
+        options.LoginPath = "/login";
+        options.LogoutPath = "/login";
+    });
+
+
+builder.Services.AddAuthorizationCore(); 
+builder.Services.AddCascadingAuthenticationState();
+
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
+builder.Services.AddAuthorizationCore();
+
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -20,6 +41,9 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.UseAntiforgery();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

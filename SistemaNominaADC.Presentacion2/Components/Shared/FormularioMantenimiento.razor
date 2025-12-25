@@ -1,0 +1,33 @@
+﻿@typeparam TItem
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">@Titulo</h5>
+    </div>
+    <div class="card-body">
+        <EditForm Model="Modelo" OnValidSubmit="OnValidSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            @* AQUÍ es donde se inyectan los campos específicos *@
+            @EditorTemplate(Modelo)
+
+            <div class="mt-3 d-flex gap-2">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-lg"></i> Guardar
+                </button>
+                <button type="button" class="btn btn-secondary" @onclick="OnCancelar">
+                    <i class="bi bi-x-lg"></i> Cancelar
+                </button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Titulo { get; set; } = "Mantenimiento";
+    [Parameter] public TItem Modelo { get; set; } = default!;
+    [Parameter] public RenderFragment<TItem> EditorTemplate { get; set; } = default!;
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+    [Parameter] public EventCallback OnCancelar { get; set; }
+}
