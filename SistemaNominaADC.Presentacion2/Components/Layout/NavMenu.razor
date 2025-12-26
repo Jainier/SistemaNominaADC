@@ -1,10 +1,9 @@
 ﻿@implements IDisposable
-
 @inject NavigationManager NavigationManager
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">SistemaNominaADC.Presentacion</a>
+        <a class="navbar-brand" href="">Sistema Nomina ADC</a>
     </div>
 </div>
 
@@ -19,22 +18,51 @@
         </div>
 
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
+            <NavLink class="nav-link" @onclick="ToggleSubMenu" style="cursor: pointer;">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span>
+                <span class="flex-grow-1">Mantenimientos</span>
+                <i class="bi bi-icon @(expandSubMenu ? "bi-chevron-down" : "bi-chevron-right")"></i>
             </NavLink>
         </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
+        @if (expandSubMenu)
+        {
+            <div class="ps-3">
+                @if (objetosMenu != null)
+                {
+                    @foreach (var objeto in objetosMenu)
+                    {
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="@($"/mantenimientos/{objeto.NombreEntidad.ToLower()}s")">
+                                <span class="bi bi-icon bi-dot" aria-hidden="true"></span> @objeto.NombreEntidad
+                            </NavLink>
+                        </div>
+                    }
+                }
+            </div>
+        }
+
+        <div class="nav-item px-3 mt-2">
+            <div class="nav-link text-white-50 small"><strong>CONFIGURACIÓN</strong></div>
         </div>
 
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="auth">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Auth Required
+            <NavLink class="nav-link" href="mantenimientos/estados">
+                <i class="bi bi-icon bi-gear-wide-connected"></i> Estados
             </NavLink>
         </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="mantenimientos/grupos">
+                <i class="bi bi-icon bi-collection-fill"></i> Grupos de Estados
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="mantenimientos/objetos">
+                <i class="bi bi-icon bi-box-seam-fill"></i> Objetos del Sistema
+            </NavLink>
+        </div>
+
+        <hr class="text-white-50" />
 
         <AuthorizeView>
             <Authorized>
@@ -68,25 +96,3 @@
         </AuthorizeView>
     </nav>
 </div>
-
-@code {
-    private string? currentUrl;
-
-    protected override void OnInitialized()
-    {
-        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-        NavigationManager.LocationChanged += OnLocationChanged;
-    }
-
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
-        StateHasChanged();
-    }
-
-    public void Dispose()
-    {
-        NavigationManager.LocationChanged -= OnLocationChanged;
-    }
-}
-

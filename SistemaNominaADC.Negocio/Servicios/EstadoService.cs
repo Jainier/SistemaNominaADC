@@ -29,16 +29,56 @@ namespace SistemaNominaADC.Negocio.Servicios
             return await _context.Estados.FirstOrDefaultAsync(d => d.IdEstado == id);
         }
 
-        public async Task<bool> Guardar(Estado modelo)
+        public async Task<bool> Guardar(Estado entidad, List<int> idsGrupos)
         {
-            if (modelo.IdEstado == 0)
-                _context.Estados.Add(modelo);
-            else
-                _context.Estados.Update(modelo);
+            // Iniciamos una transacción
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // 1. Guardar o Actualizar los datos del Estado
+                if (entidad.IdEstado == 0)
+                    _context.Estados.Add(entidad);
+                else
+                    _context.Estados.Update(entidad);
 
-            return await _context.SaveChangesAsync() > 0;
+                await _context.SaveChangesAsync();
+
+                // 2. Borrar asociaciones viejas en la tabla puente
+                var actuales = _context.GrupoEstadoDetalles
+                    .Where(x => x.IdEstado == entidad.IdEstado);
+                _context.GrupoEstadoDetalles.RemoveRange(actuales);
+
+                // 3. Insertar las nuevas asociaciones
+                foreach (var idGrupo in idsGrupos)
+                {
+                    _context.GrupoEstadoDetalles.Add(new GrupoEstadoDetalle
+                    {
+                        IdEstado = entidad.IdEstado,
+                        IdGrupoEstado = idGrupo
+                    });
+                }
+
+                await _context.SaveChangesAsync();
+
+                // Si todo salió bien, confirmamos los cambios en la BD
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                // Si hubo un error, deshacemos todo para no dejar basura
+                await transaction.RollbackAsync();
+                return false;
+            }
         }
 
+        public async Task<List<int>> ObtenerIdsGruposAsociados(int idEstado)
+        {
+            return await _context.GrupoEstadoDetalles
+                .Where(x => x.IdEstado == idEstado)
+                .Select(x => x.IdGrupoEstado)
+                .ToListAsync();
+        }
         public async Task<bool> Eliminar(int id)
         {
             var modelo = await _context.Estados.FirstOrDefaultAsync(d => d.IdEstado == id);
@@ -48,6 +88,19 @@ namespace SistemaNominaADC.Negocio.Servicios
                 return await _context.SaveChangesAsync() > 0;
             }
             return false;
+        }
+
+        public async Task<List<Estado?>> ListarEstadosPorEntidad(string nombreEntidad)
+        {
+            var objeto = await _context.ObjetoSistemas
+                .FirstOrDefaultAsync(o => o.NombreEntidad == nombreEntidad);
+
+            if (objeto == null) return new List<Estado?>();
+
+            return await _context.GrupoEstadoDetalles
+                .Where(gd => gd.IdGrupoEstado == objeto.IdGrupoEstado)
+                .Select(gd => gd.Estado)
+                .ToListAsync();
         }
     }
 }

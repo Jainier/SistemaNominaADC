@@ -1,0 +1,16 @@
+﻿@typeparam TEntidad
+@namespace SistemaNominaADC.Presentacion.Components.Shared
+
+<div class="mb-3">
+    <label class="form-label">Estado</label>
+    <select class="form-select" value="@IdEstadoSeleccionado" @onchange="OnIdEstadoChanged">
+        <option value="0">-- Seleccione un Estado --</option>
+        @if (estados != null)
+        {
+            foreach (var est in estados)
+            {
+                <option value="@est.IdEstado">@est.Nombre</option>
+            }
+        }
+    </select>
+</div>

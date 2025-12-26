@@ -35,5 +35,9 @@ namespace SistemaNominaADC.Negocio.Servicios
                 .Include(o => o.GrupoEstado)
                 .FirstOrDefaultAsync(o => o.NombreEntidad == nombreEntidad);
         }
+        public async Task<List<ObjetoSistema>> ListaParaMenu()
+        {
+            return await _context.ObjetoSistemas.ToListAsync();
+        }
     }
 }

@@ -26,7 +26,7 @@ namespace SistemaNominaADC.Datos
         {
             base.OnModelCreating(builder);
 
-            // --- CONFIGURACIÓN DE DEPARTAMENTO ---
+            // CONFIGURACIÓN DE DEPARTAMENTO
             builder.Entity<Departamento>(entity =>
             {
                 entity.ToTable("Departamento"); 
@@ -43,7 +43,7 @@ namespace SistemaNominaADC.Datos
 
             });
 
-            // --- CONFIGURACIÓN DE PUESTO ---
+            // CONFIGURACIÓN DE PUESTO
             builder.Entity<Puesto>(entity =>
             {
                 entity.ToTable("Puesto");
@@ -52,7 +52,7 @@ namespace SistemaNominaADC.Datos
                 entity.Property(e => e.Estado).IsRequired();
             });
 
-            // --- CONFIGURACIÓN DE EMPLEADO ---
+            // CONFIGURACIÓN DE EMPLEADO
             builder.Entity<Empleado>(entity =>
             {
                 entity.ToTable("Empleado");
@@ -68,7 +68,7 @@ namespace SistemaNominaADC.Datos
                 entity.Property(e => e.FechaIngreso).IsRequired();
             });
 
-            // --- CONFIGURACIÓN DE BITACORA ---
+            // CONFIGURACIÓN DE BITACORA 
             builder.Entity<Bitacora>(entity =>
             {
                 entity.ToTable("Bitacora");
@@ -78,7 +78,7 @@ namespace SistemaNominaADC.Datos
                 entity.Property(e => e.Detalle).IsRequired();
 
             });
-            // --- CONFIGURACIÓN DE ESTADO ---
+            // CONFIGURACIÓN DE ESTADO 
             builder.Entity<Estado>(entity =>
             {
                 entity.ToTable("Estado");
@@ -88,14 +88,14 @@ namespace SistemaNominaADC.Datos
 
                 entity.Property(e => e.Nombre).HasMaxLength(100).IsUnicode(false);
             });
-            // --- CONFIGURACIÓN DE GRUPO ESTADO Y DETALLE ---
+            // CONFIGURACIÓN DE GRUPO ESTADO Y DETALLE
             builder.Entity<GrupoEstadoDetalle>()
             .HasKey(cd => new { cd.IdGrupoEstado, cd.IdEstado });
 
             builder.Entity<GrupoEstado>().ToTable("GrupoEstado");
             builder.Entity<GrupoEstadoDetalle>().ToTable("GrupoEstadoDetalle");
 
-            // --- CONFIGURACIÓN DE OBJETO SISTEMA ---
+            // CONFIGURACIÓN DE OBJETO SISTEMA
             builder.Entity<ObjetoSistema>().ToTable("ObjetoSistema");
 
 

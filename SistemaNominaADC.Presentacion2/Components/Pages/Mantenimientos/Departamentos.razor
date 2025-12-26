@@ -19,11 +19,7 @@
                 <ValidationMessage For="@(() => depto.Nombre)" />
             </div>
 
-            @* Ejemplo de otro campo si lo tuvieras *@
-            @* <div class="mb-3">
-                 <label>Presupuesto</label>
-                 <InputNumber class="form-control" @bind-Value="depto.Presupuesto" />
-               </div> *@
+            <SelectorEstado TEntidad="Departamento" @bind-IdEstadoSeleccionado="depto.IdEstado" />
         </EditorTemplate>
 
     </FormularioMantenimiento>

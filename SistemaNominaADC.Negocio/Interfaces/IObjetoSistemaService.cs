@@ -12,5 +12,6 @@ namespace SistemaNominaADC.Negocio.Interfaces
         Task<List<ObjetoSistema>> Lista();
         Task<bool> Guardar(ObjetoSistema entidad);
         Task<ObjetoSistema?> ObtenerPorNombre(string nombreEntidad);
+        Task<List<ObjetoSistema>> ListaParaMenu();
     }
 }

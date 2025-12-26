@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using SistemaNominaADC.Entidades;
 using SistemaNominaADC.Negocio.Interfaces;
+using SistemaNominaADC.Negocio.Servicios;
 
 namespace SistemaNominaADC.Presentacion.Components.Pages.Mantenimientos
 {
@@ -10,6 +11,7 @@ namespace SistemaNominaADC.Presentacion.Components.Pages.Mantenimientos
 
         // Variables para la vista
         private List<Departamento>? listaDepartamentos;
+        private List<Estado> estadosDisponibles = new();
         private Departamento departamentoActual = new();
         private bool mostrarFormulario = false;
         private string tituloFormulario = "Nuevo Departamento";
@@ -35,8 +37,6 @@ namespace SistemaNominaADC.Presentacion.Components.Pages.Mantenimientos
         // Acción: Clic en una fila (Editar)
         private void Editar(Departamento item)
         {
-            // Importante: Hacemos una copia o usamos el mismo objeto. 
-            // Para editar, pasamos el objeto tal cual.
             departamentoActual = item;
             tituloFormulario = $"Editar: {item.Nombre}";
             mostrarFormulario = true;

@@ -1,0 +1,49 @@
+﻿@page "/mantenimientos/grupos"
+@rendermode InteractiveServer
+@using SistemaNominaADC.Entidades
+
+<h3>Mantenimiento de Grupos de Estados</h3>
+
+@if (mostrarFormulario)
+{
+    <FormularioMantenimiento Titulo="@tituloFormulario" Modelo="grupoActual" OnValidSubmit="Guardar" OnCancelar="Cancelar">
+        <EditorTemplate Context="grupo">
+            <div class="mb-3">
+                <label class="form-label">Nombre del Grupo</label>
+                <InputText class="form-control" @bind-Value="grupo.Nombre" placeholder="Ej: ESTANDAR, RRHH, NOMINA" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Descripción</label>
+                <InputTextArea class="form-control" @bind-Value="grupo.Descripcion" />
+            </div>
+        </EditorTemplate>
+    </FormularioMantenimiento>
+}
+else
+{
+    <div class="mb-3">
+        <button class="btn btn-primary" @onclick="Crear">
+            <i class="bi bi-plus-circle"></i> Nuevo Grupo
+        </button>
+    </div>
+
+    @if (listaGrupos == null)
+    {
+        <div class="alert alert-info">Cargando grupos...</div>
+    }
+    else
+    {
+        <TablaMantenimiento TItem="GrupoEstado" Items="listaGrupos" OnRowClick="Editar">
+            <HeaderTemplate>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+            </HeaderTemplate>
+            <RowTemplate Context="item">
+                <td>@item.IdGrupoEstado</td>
+                <td><strong>@item.Nombre</strong></td>
+                <td>@item.Descripcion</td>
+            </RowTemplate>
+        </TablaMantenimiento>
+    }
+}

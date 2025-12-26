@@ -22,6 +22,21 @@
                 <InputCheckbox class="form-check-input" @bind-Value="est.EstadoActivo" id="chkActivo" />
                 <label class="form-check-label" for="chkActivo">Estado Habilitado para el Sistema</label>
             </div>
+            @*Grupos de estados*@
+            <div class="d-flex flex-wrap gap-2">
+                @foreach (var grupo in listaGrupos)
+                {
+                    <div class="form-check border p-2 rounded shadow-sm bg-white" style="min-width: 180px;">
+                        <input class="form-check-input ms-1" type="checkbox"
+                               id="grupo-@grupo.IdGrupoEstado"
+                               checked="@gruposSeleccionados.Contains(grupo.IdGrupoEstado)"
+                               @onchange="@(e => AlternarGrupo(grupo.IdGrupoEstado, e.Value))" />
+                        <label class="form-check-label ms-4" for="grupo-@grupo.IdGrupoEstado">
+                            @grupo.Nombre
+                        </label>
+                    </div>
+                }
+            </div>
 
         </EditorTemplate>
     </FormularioMantenimiento>
