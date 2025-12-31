@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Components;
 using SistemaNominaADC.Entidades;
 using SistemaNominaADC.Negocio.Interfaces;
+using SistemaNominaADC.Presentacion.Services.Http;
 
 namespace SistemaNominaADC.Presentacion.Components.Pages.Mantenimientos
 {
     public partial class Estados
     {
-        [Inject] private IEstadoService EstadoService { get; set; } = null!;
-        [Inject] private IGrupoEstadoService GrupoService { get; set; } = null!;
+        [Inject] private IEstadoCliente EstadoCliente { get; set; } = null!;
+        [Inject] private IGrupoEstadoCliente GrupoCliente { get; set; } = null!;
 
         // Variables de estado para la vista
         private List<Estado>? listaEstados;
@@ -26,8 +27,8 @@ namespace SistemaNominaADC.Presentacion.Components.Pages.Mantenimientos
 
         private async Task CargarDatos()
         {
-            listaEstados = await EstadoService.Lista();
-            listaGrupos = await GrupoService.Lista(); 
+            listaEstados = await EstadoCliente.Lista();
+            listaGrupos = await GrupoCliente.Lista(); 
         }
 
         private void AlternarGrupo(int idGrupo, object? valor)
@@ -53,12 +54,12 @@ namespace SistemaNominaADC.Presentacion.Components.Pages.Mantenimientos
         private async Task Editar(Estado item)
         {
             estadoActual = item;
-            gruposSeleccionados = await EstadoService.ObtenerIdsGruposAsociados(item.IdEstado);
+            gruposSeleccionados = await EstadoCliente.ObtenerIdsGruposAsociados(item.IdEstado);
             mostrarFormulario = true;
         }
         private async Task Guardar()
         {
-            if (await EstadoService.Guardar(estadoActual, gruposSeleccionados))
+            if (await EstadoCliente.Guardar(estadoActual, gruposSeleccionados))
             {
                 mostrarFormulario = false;
                 gruposSeleccionados.Clear(); 

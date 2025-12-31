@@ -10,10 +10,9 @@ namespace SistemaNominaADC.Negocio.Interfaces
     public interface IEstadoService
     {
         Task<List<Estado>> Lista();
-        // Actualizamos esta línea para recibir los dos parámetros
+        Task<Estado?> Obtener(int id);
         Task<bool> Guardar(Estado entidad, List<int> idsGrupos);
         Task<bool> Eliminar(int id);
-        // Agregamos este para que la edición funcione
         Task<List<int>> ObtenerIdsGruposAsociados(int idEstado);
 
         Task<List<Estado?>> ListarEstadosPorEntidad(string nombreEntidad);

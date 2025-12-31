@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Components;
 using SistemaNominaADC.Entidades;
-using SistemaNominaADC.Negocio.Interfaces;
+using SistemaNominaADC.Presentacion.Services.Http;
 
 namespace SistemaNominaADC.Presentacion.Components.Pages.Mantenimientos
 {
     public partial class ObjetosSistema
     {
-        [Inject] private IObjetoSistemaService ObjetoService { get; set; } = null!;
-        [Inject] private IGrupoEstadoService GrupoService { get; set; } = null!; 
+        [Inject] private IObjetoSistemaCliente ObjetoCliente { get; set; } = null!;
+        [Inject] private IGrupoEstadoCliente GrupoCliente { get; set; } = null!; 
 
         private List<ObjetoSistema>? listaObjetos;
         private List<GrupoEstado>? listaGrupos;
@@ -22,8 +22,8 @@ namespace SistemaNominaADC.Presentacion.Components.Pages.Mantenimientos
 
         private async Task CargarDatos()
         {
-            listaObjetos = await ObjetoService.Lista();
-            listaGrupos = await GrupoService.Lista();
+            listaObjetos = await ObjetoCliente.Lista();
+            listaGrupos = await GrupoCliente.Lista();
         }
 
         private void Crear()
@@ -42,7 +42,7 @@ namespace SistemaNominaADC.Presentacion.Components.Pages.Mantenimientos
 
         private async Task Guardar()
         {
-            if (await ObjetoService.Guardar(objetoActual))
+            if (await ObjetoCliente.Guardar(objetoActual))
             {
                 mostrarFormulario = false;
                 await CargarDatos();

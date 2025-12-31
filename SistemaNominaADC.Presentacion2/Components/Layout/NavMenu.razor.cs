@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using SistemaNominaADC.Entidades;
-using SistemaNominaADC.Negocio.Interfaces;
+using SistemaNominaADC.Presentacion.Services.Http;
 
 namespace SistemaNominaADC.Presentacion.Components.Layout
 {
     public partial class NavMenu : IDisposable
     {
-        [Inject] private IObjetoSistemaService ObjetoService { get; set; } = null!;
+        [Inject] private IObjetoSistemaCliente ObjetoCliente { get; set; } = null!;
 
         private string? currentUrl;
         private List<ObjetoSistema>? objetosMenu;
@@ -20,7 +20,7 @@ namespace SistemaNominaADC.Presentacion.Components.Layout
             
             try
             {
-                objetosMenu = await ObjetoService.ListaParaMenu();
+                objetosMenu = await ObjetoCliente.ListaParaMenu();
             }
             catch
             {

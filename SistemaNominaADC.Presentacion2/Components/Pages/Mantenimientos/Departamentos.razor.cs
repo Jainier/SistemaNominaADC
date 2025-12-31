@@ -1,13 +1,12 @@
 ﻿using Microsoft.AspNetCore.Components;
 using SistemaNominaADC.Entidades;
-using SistemaNominaADC.Negocio.Interfaces;
-using SistemaNominaADC.Negocio.Servicios;
+using SistemaNominaADC.Presentacion.Services.Http;
 
 namespace SistemaNominaADC.Presentacion.Components.Pages.Mantenimientos
 {
     public partial class Departamentos
     {
-        [Inject] private IDepartamentoService DepartamentoService { get; set; } = null!;
+        [Inject] private IDepartamentoCliente DepartamentoCliente { get; set; } = null!;
 
         // Variables para la vista
         private List<Departamento>? listaDepartamentos;
@@ -23,7 +22,7 @@ namespace SistemaNominaADC.Presentacion.Components.Pages.Mantenimientos
 
         private async Task CargarDatos()
         {
-            listaDepartamentos = await DepartamentoService.Lista();
+            listaDepartamentos = await DepartamentoCliente.Lista();
         }
 
         // Acción: Botón "Nuevo"
@@ -45,7 +44,7 @@ namespace SistemaNominaADC.Presentacion.Components.Pages.Mantenimientos
         // Acción: Botón "Guardar" del formulario
         private async Task Guardar()
         {
-            var resultado = await DepartamentoService.Guardar(departamentoActual);
+            var resultado = await DepartamentoCliente.Guardar(departamentoActual);
             if (resultado)
             {
                 mostrarFormulario = false;

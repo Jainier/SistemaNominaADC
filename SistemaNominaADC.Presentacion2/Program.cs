@@ -5,8 +5,7 @@ using SistemaNominaADC.Presentacion.Components;
 using SistemaNominaADC.Presentacion.Components.Account;
 using SistemaNominaADC.Datos;
 using SistemaNominaADC.Entidades;
-using SistemaNominaADC.Negocio.Interfaces;
-using SistemaNominaADC.Negocio.Servicios;
+using SistemaNominaADC.Presentacion.Services.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,36 +13,47 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddScoped<IdentityUserAccessor>();
-builder.Services.AddScoped<IdentityRedirectManager>();
-builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+//Servicios de Identity
+//builder.Services.AddCascadingAuthenticationState();
+//builder.Services.AddScoped<IdentityUserAccessor>();
+//builder.Services.AddScoped<IdentityRedirectManager>();
+//builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
-builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultScheme = IdentityConstants.ApplicationScheme;
-        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-    })
-    .AddIdentityCookies();
+//builder.Services.AddAuthentication(options =>
+//    {
+//        options.DefaultScheme = IdentityConstants.ApplicationScheme;
+//        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+//    })
+//    .AddIdentityCookies();
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+//Servicios API
+builder.Services.AddScoped(sp => new HttpClient
+{
+    BaseAddress = new Uri("https://localhost:7068/")
+});
 
-builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddRoles<IdentityRole>() 
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddSignInManager()
-    .AddDefaultTokenProviders();
+builder.Services.AddScoped<IRolCliente, RolCliente>();
+builder.Services.AddScoped<IObjetoSistemaCliente, ObjetoSistemaCliente>();
+builder.Services.AddScoped<IGrupoEstadoCliente, GrupoEstadoCliente>();
+builder.Services.AddScoped<IEstadoCliente, EstadoCliente>();
+builder.Services.AddScoped<IDepartamentoCliente, DepartamentoCliente>();
 
-builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
-//Servicios de CRUD
-builder.Services.AddScoped<IDepartamentoService, DepartamentoService>();
-builder.Services.AddScoped<IEstadoService, EstadoService>();
-builder.Services.AddScoped<IObjetoSistemaService, ObjetoSistemaService>();
-builder.Services.AddScoped<IGrupoEstadoService, GrupoEstadoService>();
+//builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+//builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+//    .AddRoles<IdentityRole>() 
+//    .AddEntityFrameworkStores<ApplicationDbContext>()
+//    .AddSignInManager()
+//    .AddDefaultTokenProviders();
+
+//builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+
+////Servicios de CRUD
+//builder.Services.AddScoped<IDepartamentoService, DepartamentoService>();
+//builder.Services.AddScoped<IEstadoService, EstadoService>();
+//builder.Services.AddScoped<IObjetoSistemaService, ObjetoSistemaService>();
+//builder.Services.AddScoped<IGrupoEstadoService, GrupoEstadoService>();
 
 
 var app = builder.Build();
@@ -68,9 +78,9 @@ app.UseAntiforgery();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-// Add additional endpoints required by the Identity /Account Razor components.
-app.MapAdditionalIdentityEndpoints();
-
+//// Add additional endpoints required by the Identity /Account Razor components.
+//app.MapAdditionalIdentityEndpoints();
+/*
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -128,5 +138,5 @@ using (var scope = app.Services.CreateScope())
         logger.LogError(ex, "Ocurrió un error al sembrar la base de datos.");
     }
 }
-
+*/
 app.Run();
