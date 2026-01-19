@@ -1,0 +1,69 @@
+﻿@page "/mantenimientos/objetos"
+@rendermode InteractiveServer
+@using SistemaNominaADC.Entidades
+
+<h3>Configuración de Objetos del Sistema</h3>
+
+@if (mostrarFormulario)
+{
+    <FormularioMantenimiento Titulo="@tituloFormulario" Modelo="objetoActual" OnValidSubmit="Guardar" OnCancelar="Cancelar">
+        <EditorTemplate Context="obj">
+            <div class="mb-3">
+                <label class="form-label">Nombre de la Entidad (Clave)</label>
+                <InputText class="form-control" @bind-Value="obj.NombreEntidad" placeholder="Ej: Departamento" />
+                <div class="form-text">Debe coincidir con el nombre interno que uses en el código.</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Grupo de Estados Asignado</label>
+                <InputSelect class="form-select" @bind-Value="obj.IdGrupoEstado">
+                    <option value="">-- Seleccione un Grupo --</option>
+                    @if (listaGrupos != null)
+                    {
+                        foreach (var grupo in listaGrupos)
+                        {
+                            <option value="@grupo.IdGrupoEstado">@grupo.Nombre</option>
+                        }
+                    }
+                </InputSelect>
+            </div>
+        </EditorTemplate>
+    </FormularioMantenimiento>
+}
+else
+{
+    <div class="mb-3">
+        <button class="btn btn-primary" @onclick="Crear">
+            <i class="bi bi-gear-fill"></i> Configurar Nuevo Objeto
+        </button>
+    </div>
+
+    <TablaMantenimiento TItem="ObjetoSistema"
+                        Items="listaObjetos"
+                        OnRowClick="Editar">
+
+        <ColumnsTemplate>
+
+            <RadzenDataGridColumn TItem="ObjetoSistema"
+                                  Property="IdObjeto"
+                                  Title="ID"
+                                  Width="80px" />
+
+            <RadzenDataGridColumn TItem="ObjetoSistema"
+                                  Title="Entidad">
+                <Template Context="item">
+                    <strong>@item.NombreEntidad</strong>
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="ObjetoSistema"
+                                  Title="Grupo de Estados">
+                <Template Context="item">
+                    @(item.GrupoEstado?.Nombre ?? "Sin Grupo")
+                </Template>
+            </RadzenDataGridColumn>
+
+        </ColumnsTemplate>
+
+    </TablaMantenimiento>
+}

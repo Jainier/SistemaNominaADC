@@ -24,7 +24,7 @@ namespace SistemaNominaADC.Negocio.Servicios
             return await _context.Estados.ToListAsync();
         }
 
-        public async Task<Estado> Obtener(int id)
+        public async Task<Estado?> Obtener(int id)
         {
             return await _context.Estados.FirstOrDefaultAsync(d => d.IdEstado == id);
         }

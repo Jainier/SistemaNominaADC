@@ -1,0 +1,63 @@
+﻿@page "/mantenimientos/departamentos"
+@using SistemaNominaADC.Entidades
+
+<h3>Catálogo de Departamentos</h3>
+
+@if (mostrarFormulario)
+{
+    @* MODO EDICIÓN: Usamos el componente genérico de Formulario *@
+    <FormularioMantenimiento Titulo="@tituloFormulario"
+                             Modelo="departamentoActual"
+                             OnValidSubmit="Guardar"
+                             OnCancelar="Cancelar"
+                             OnEliminar="Eliminar"
+                             MostrarEliminar="@(departamentoActual.IdDepartamento > 0)">
+
+        <EditorTemplate Context="depto">
+            @* Aquí van los INPUTS específicos de Departamento *@
+            <div class="mb-3">
+                <label class="form-label">Nombre del Departamento</label>
+                <InputText class="form-control" @bind-Value="depto.Nombre" />
+                <ValidationMessage For="@(() => depto.Nombre)" />
+            </div>
+
+            <SelectorEstado TEntidad="Departamento" @bind-IdEstadoSeleccionado="depto.IdEstado" />
+        </EditorTemplate>
+
+    </FormularioMantenimiento>
+}
+else
+{
+    @* MODO LISTA *@
+    <div class="mb-3">
+        <button class="btn btn-primary" @onclick="Crear">
+            <i class="bi bi-plus-circle"></i> Nuevo Departamento
+        </button>
+    </div>
+
+    <TablaMantenimiento TItem="Departamento"
+                        Items="listaDepartamentos"
+                        OnRowClick="Editar">
+
+        <ColumnsTemplate>
+
+            <RadzenDataGridColumn TItem="Departamento"
+                                  Property="IdDepartamento"
+                                  Title="ID"
+                                  Width="80px" />
+
+            <RadzenDataGridColumn TItem="Departamento"
+                                  Property="Nombre"
+                                  Title="Nombre" />
+
+            <RadzenDataGridColumn TItem="Departamento"
+                                  Title="Estado">
+                <Template Context="item">
+                    @(item.Estado?.Nombre ?? "N/A")
+                </Template>
+            </RadzenDataGridColumn>
+
+        </ColumnsTemplate>
+
+    </TablaMantenimiento>
+}

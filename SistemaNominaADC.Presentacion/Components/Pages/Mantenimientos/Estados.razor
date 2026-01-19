@@ -1,0 +1,96 @@
+﻿@page "/mantenimientos/estados"
+@rendermode InteractiveServer
+
+@if (mostrarFormulario)
+{
+    <FormularioMantenimiento Titulo="@tituloFormulario" Modelo="estadoActual"
+                             OnValidSubmit="Guardar" OnCancelar="Cancelar">
+        <EditorTemplate Context="est">
+            <div class="mb-3">
+                <label>Código Interno</label>
+                <InputNumber class="form-control" @bind-Value="est.Codigo" />
+            </div>
+            <div class="mb-3">
+                <label>Nombre del Estado</label>
+                <InputText class="form-control" @bind-Value="est.Nombre" />
+            </div>
+            <div class="mb-3">
+                <label>Descripción</label>
+                <InputTextArea class="form-control" @bind-Value="est.Descripcion" />
+            </div>
+            <div class="form-check mb-3">
+                <InputCheckbox class="form-check-input" @bind-Value="est.EstadoActivo" id="chkActivo" />
+                <label class="form-check-label" for="chkActivo">Estado Habilitado para el Sistema</label>
+            </div>
+            @*Grupos de estados*@
+            <div class="d-flex flex-wrap gap-2">
+                @foreach (var grupo in listaGrupos)
+                {
+                    <div class="form-check border p-2 rounded shadow-sm bg-white" style="min-width: 180px;">
+                        <input class="form-check-input ms-1" type="checkbox"
+                               id="grupo-@grupo.IdGrupoEstado"
+                               checked="@gruposSeleccionados.Contains(grupo.IdGrupoEstado)"
+                               @onchange="@(e => AlternarGrupo(grupo.IdGrupoEstado, e.Value))" />
+                        <label class="form-check-label ms-4" for="grupo-@grupo.IdGrupoEstado">
+                            @grupo.Nombre
+                        </label>
+                    </div>
+                }
+            </div>
+
+        </EditorTemplate>
+    </FormularioMantenimiento>
+}
+else
+{
+    @* MODO LISTA *@
+    <div class="mb-3">
+        @*<button class="btn btn-primary" @onclick="CargarDatos">
+            <i class="bi bi-"></i> Filtrar
+        </button>*@
+        <button class="btn btn-primary" @onclick="Crear">
+            <i class="bi bi-plus-circle"></i> Nuevo Estado
+        </button>
+        
+    </div>
+
+
+    @if (listaEstados == null)
+    {
+        <div class="alert alert-info">Cargando estados...</div>
+    }
+    else
+    {
+        <TablaMantenimiento TItem="Estado"
+                            Items="listaEstados"
+                            OnRowClick="Editar">
+
+            <ColumnsTemplate>
+
+                <RadzenDataGridColumn TItem="Estado"
+                                      Property="Codigo"
+                                      Title="ID"
+                                      Width="80px" />
+
+                <RadzenDataGridColumn TItem="Estado"
+                                      Property="Nombre"
+                                      Title="Nombre" />
+
+                <RadzenDataGridColumn TItem="Estado"
+                                      Property="Descripcion"
+                                      Title="Descripción" />
+
+                <RadzenDataGridColumn TItem="Estado"
+                                      Title="¿Activo?">
+                    <Template Context="item">
+                        <span class="badge @(item.EstadoActivo ? "bg-success" : "bg-danger")">
+                            @(item.EstadoActivo ? "Sí" : "No")
+                        </span>
+                    </Template>
+                </RadzenDataGridColumn>
+
+            </ColumnsTemplate>
+
+        </TablaMantenimiento>
+    }
+}

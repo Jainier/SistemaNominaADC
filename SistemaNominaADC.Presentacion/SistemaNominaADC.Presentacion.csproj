@@ -4,22 +4,19 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>aspnet-SistemaNominaADC.Presentacion-99a76545-4351-45e2-8cac-8b3cb21a1eb7</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="12.0.1" />
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.*" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.22" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.22" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.22" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.22">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.22" />
+    <PackageReference Include="Radzen.Blazor" Version="8.5.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SistemaNominaADC.Datos\SistemaNominaADC.Datos.csproj" />
     <ProjectReference Include="..\SistemaNominaADC.Entidades\SistemaNominaADC.Entidades.csproj" />
     <ProjectReference Include="..\SistemaNominaADC.Negocio\SistemaNominaADC.Negocio.csproj" />
     <ProjectReference Include="..\SistemaNominaADC.Utilidades\SistemaNominaADC.Utilidades.csproj" />

@@ -1,0 +1,37 @@
+﻿@page "/"
+@using SistemaNominaADC.Presentacion.Services.Auth
+@using SistemaNominaADC.Entidades.DTOs
+
+@inject NavigationManager Navigation
+@inject SessionService SessionService
+
+<RadzenCard Style="max-width:400px;margin:auto;margin-top:5rem;">
+    <RadzenText Text="Iniciar sesión" TextStyle="TextStyle.H5" />
+
+    <RadzenTemplateForm TItem="LoginRequestDTO"
+                        Data="@loginModel"
+                        Submit="@(async (LoginRequestDTO m) => await OnLoginAsync(m))">
+
+        <RadzenTextBox Name="Email"
+                       @bind-Value="loginModel.Email"
+                       Placeholder="Correo electrónico"
+                       Style="width:100%" />
+
+        <RadzenPassword Name="Password"
+                        @bind-Value="loginModel.Password"
+                        Placeholder="Contraseña"
+                        Style="width:100%; margin-top:1rem;" />
+
+        <RadzenButton Text="Ingresar"
+                      ButtonStyle="ButtonStyle.Primary"
+                      Style="width:100%; margin-top:1.5rem;" />
+
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <RadzenAlert Severity="AlertSeverity.Error" Text="@error" Style="margin-top:1rem;" />
+        }
+    </RadzenTemplateForm>
+</RadzenCard>
+
+
+

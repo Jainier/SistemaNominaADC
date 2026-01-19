@@ -1,0 +1,31 @@
+﻿@typeparam TItem
+
+<RadzenDataGrid TItem="TItem"
+                Data="@Items"
+                AllowFiltering="true"
+                AllowSorting="true"
+                AllowPaging="true"
+                PageSize="10"
+                Responsive="true"
+                RowSelect="@OnRowSelected">
+
+    <Columns>
+        @ColumnsTemplate
+    </Columns>
+
+</RadzenDataGrid>
+
+@code {
+
+    [Parameter] public IEnumerable<TItem>? Items { get; set; }
+
+    [Parameter] public RenderFragment? ColumnsTemplate { get; set; }
+
+    [Parameter] public EventCallback<TItem> OnRowClick { get; set; }
+
+    private async Task OnRowSelected(TItem item)
+    {
+        if (OnRowClick.HasDelegate)
+            await OnRowClick.InvokeAsync(item);
+    }
+}

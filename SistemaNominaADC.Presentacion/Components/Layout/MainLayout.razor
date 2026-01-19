@@ -1,10 +1,12 @@
-﻿
-@inherits LayoutComponentBase
+﻿@inherits LayoutComponentBase
 
 <div class="page">
     <div class="sidebar">
-        <NavMenu />
-    </div>
+        @if (isAuthenticated)
+        {
+            <NavMenu />
+        }
+        </div>
 
     <main>
         <div class="top-row px-4">
@@ -22,3 +24,14 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@inject AuthenticationStateProvider AuthStateProvider
+@code {
+    private bool isAuthenticated;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+    }
+}
