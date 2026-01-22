@@ -12,6 +12,8 @@ namespace SistemaNominaADC.Presentacion.Services.Auth
         public string? UserName { get; private set; }
         public List<string> Roles { get; private set; } = new();
 
+        public event Action? OnSessionChanged;
+
         public bool IsAuthenticated =>
             !string.IsNullOrEmpty(Token) &&
             Expiration > DateTime.UtcNow;
@@ -74,5 +76,10 @@ namespace SistemaNominaADC.Presentacion.Services.Auth
 
             oHttpClient.DefaultRequestHeaders.Authorization = null;
         }
+        public void NotifySessionChanged()
+        {
+            OnSessionChanged?.Invoke();
+        }
+
     }
 }

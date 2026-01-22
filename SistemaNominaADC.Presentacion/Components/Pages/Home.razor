@@ -1,0 +1,15 @@
+﻿@page "/"
+@using SistemaNominaADC.Presentacion.Services.Auth
+
+
+<RadzenCard Style="margin:2rem;padding:2rem;">
+    <RadzenText Text="Bienvenido al Sistema de Nómina ADC"
+                TextStyle="TextStyle.H4" />
+
+    <RadzenText Text="Seleccione una opción del menú para continuar."
+                Style="margin-top:1rem;" />
+</RadzenCard>
+
+@inject SessionService SessionService
+@inject NavigationManager Navigation
+

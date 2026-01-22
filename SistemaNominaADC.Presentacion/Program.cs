@@ -1,11 +1,6 @@
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using SistemaNominaADC.Datos;
-using SistemaNominaADC.Entidades;
-using SistemaNominaADC.Negocio.Servicios;
 using SistemaNominaADC.Presentacion.Components;
-using SistemaNominaADC.Presentacion.Components.Account;
+using SistemaNominaADC.Presentacion.Security;
 using SistemaNominaADC.Presentacion.Services.Auth;
 using SistemaNominaADC.Presentacion.Services.Http;
 
@@ -15,18 +10,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-//Servicios de Identity
-//builder.Services.AddCascadingAuthenticationState();
-//builder.Services.AddScoped<IdentityUserAccessor>();
-//builder.Services.AddScoped<IdentityRedirectManager>();
-//builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
-
-//builder.Services.AddAuthentication(options =>
-//    {
-//        options.DefaultScheme = IdentityConstants.ApplicationScheme;
-//        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-//    })
-//    .AddIdentityCookies();
 
 //Servicios API
 builder.Services.AddScoped(sp => new HttpClient
@@ -48,22 +31,10 @@ builder.Services.AddScoped<Radzen.NotificationService>();
 builder.Services.AddScoped<Radzen.TooltipService>();
 builder.Services.AddScoped<Radzen.ContextMenuService>();
 
+builder.Services.AddAuthorizationCore();
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+builder.Services.AddScoped<CustomAuthStateProvider>();
 
-//builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
-//builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-//    .AddRoles<IdentityRole>() 
-//    .AddEntityFrameworkStores<ApplicationDbContext>()
-//    .AddSignInManager()
-//    .AddDefaultTokenProviders();
-
-//builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
-
-////Servicios de CRUD
-//builder.Services.AddScoped<IDepartamentoService, DepartamentoService>();
-//builder.Services.AddScoped<IEstadoService, EstadoService>();
-//builder.Services.AddScoped<IObjetoSistemaService, ObjetoSistemaService>();
-//builder.Services.AddScoped<IGrupoEstadoService, GrupoEstadoService>();
 
 
 var app = builder.Build();
@@ -88,8 +59,6 @@ app.UseAntiforgery();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-//// Add additional endpoints required by the Identity /Account Razor components.
-//app.MapAdditionalIdentityEndpoints();
 /*
 using (var scope = app.Services.CreateScope())
 {

@@ -3,11 +3,16 @@ using Microsoft.AspNetCore.Components.Routing;
 using SistemaNominaADC.Entidades;
 using SistemaNominaADC.Presentacion.Services.Auth;
 using SistemaNominaADC.Presentacion.Services.Http;
+using Microsoft.AspNetCore.Components.Authorization;
+using SistemaNominaADC.Presentacion.Security;
+
 
 namespace SistemaNominaADC.Presentacion.Components.Layout
 {
     public partial class NavMenu : IDisposable
     {
+        [Inject] private CustomAuthStateProvider AuthStateProvider { get; set; } = null!;
+
         [Inject] private IObjetoSistemaCliente ObjetoCliente { get; set; } = null!;
         [Inject] private SessionService SessionService { get; set; } = null!;
 
@@ -16,10 +21,13 @@ namespace SistemaNominaADC.Presentacion.Components.Layout
         private bool expandSubMenu;
         private bool _disposed;
 
+
         protected override async Task OnInitializedAsync()
         {
             currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
             NavigationManager.LocationChanged += OnLocationChanged;
+
+            AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
 
             if (!SessionService.IsAuthenticated)
             {
@@ -53,6 +61,38 @@ namespace SistemaNominaADC.Presentacion.Components.Layout
         {
             _disposed = true;
             NavigationManager.LocationChanged -= OnLocationChanged;
+            AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+        }
+        private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
+        {
+            if (!SessionService.IsAuthenticated)
+            {
+                objetosMenu = new();
+                expandSubMenu = false;
+            }
+            else
+            {
+                try
+                {
+                    objetosMenu = await ObjetoCliente.ListaParaMenu();
+                }
+                catch (TaskCanceledException)
+                {
+                    objetosMenu = new();
+                }
+                catch
+                {
+                    objetosMenu = new();
+                }
+            }
+
+            await InvokeAsync(StateHasChanged);
+        }
+        private void Logout()
+        {
+            SessionService.Clear();
+            AuthStateProvider.NotifyUserLogout();
+            NavigationManager.NavigateTo("/login");
         }
     }
 }

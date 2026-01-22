@@ -1,37 +1,60 @@
-﻿@page "/"
+﻿@page "/login"
 @using SistemaNominaADC.Presentacion.Services.Auth
 @using SistemaNominaADC.Entidades.DTOs
+@using SistemaNominaADC.Presentacion.Security
 
+@inject CustomAuthStateProvider AuthStateProvider
 @inject NavigationManager Navigation
 @inject SessionService SessionService
 
-<RadzenCard Style="max-width:400px;margin:auto;margin-top:5rem;">
-    <RadzenText Text="Iniciar sesión" TextStyle="TextStyle.H5" />
+<RadzenCard Style="max-width:420px;margin:auto;margin-top:6rem;padding:2rem;">
+
+    <RadzenText Text="Sistema de Nómina ADC"
+                TextStyle="TextStyle.H5"
+                Style="text-align:center;margin-bottom:1rem;" />
+
+    <RadzenText Text="Inicio de sesión"
+                TextStyle="TextStyle.Subtitle1"
+                Style="text-align:center;margin-bottom:2rem;" />
 
     <RadzenTemplateForm TItem="LoginRequestDTO"
                         Data="@loginModel"
-                        Submit="@(async (LoginRequestDTO m) => await OnLoginAsync(m))">
+                        Submit="@OnLoginAsync">
 
-        <RadzenTextBox Name="Email"
-                       @bind-Value="loginModel.Email"
-                       Placeholder="Correo electrónico"
-                       Style="width:100%" />
+        <RadzenFieldset Text="Credenciales">
 
-        <RadzenPassword Name="Password"
-                        @bind-Value="loginModel.Password"
-                        Placeholder="Contraseña"
-                        Style="width:100%; margin-top:1rem;" />
+            <RadzenLabel Text="Correo electrónico" />
+            <RadzenTextBox Name="Email"
+                           @bind-Value="loginModel.Email"
+                           Style="width:100%" />
+            <RadzenRequiredValidator Component="Email"
+                                     Text="El correo es obligatorio" />
+            <RadzenEmailValidator Component="Email"
+                                  Text="Correo inválido" />
+
+            <div style="margin-top:1rem;">
+                <RadzenLabel Text="Contraseña" />
+                <RadzenPassword Name="Password"
+                                @bind-Value="loginModel.Password"
+                                Style="width:100%" />
+                <RadzenRequiredValidator Component="Password"
+                                         Text="La contraseña es obligatoria" />
+            </div>
+
+        </RadzenFieldset>
 
         <RadzenButton Text="Ingresar"
+                      Icon="login"
                       ButtonStyle="ButtonStyle.Primary"
-                      Style="width:100%; margin-top:1.5rem;" />
+                      ButtonType="ButtonType.Submit"
+                      Style="width:100%;margin-top:2rem;" />
 
         @if (!string.IsNullOrEmpty(error))
         {
-            <RadzenAlert Severity="AlertSeverity.Error" Text="@error" Style="margin-top:1rem;" />
+            <RadzenAlert Severity="AlertSeverity.Error"
+                         Text="@error"
+                         Style="margin-top:1.5rem;" />
         }
+
     </RadzenTemplateForm>
 </RadzenCard>
-
-
-

@@ -1,7 +1,104 @@
-﻿@implements IDisposable
+﻿@using SistemaNominaADC.Presentacion.Security
+@using SistemaNominaADC.Presentacion.Services.Auth
+
 @inject NavigationManager NavigationManager
 
-<div class="top-row ps-3 navbar navbar-dark">
+@* @implements IDisposable
+@inject NavigationManager NavigationManager
+ *@
+
+@using SistemaNominaADC.Presentacion.Services.Auth
+
+@if (SessionService.IsAuthenticated)
+{
+    <div class="top-row ps-3 navbar navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="">Sistema Nómina ADC</a>
+        </div>
+    </div>
+
+    <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+    <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+        <nav class="flex-column">
+
+            <!-- HOME -->
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                    <span class="bi bi-house-door-fill-nav-menu"></span>
+                    Home
+                </NavLink>
+            </div>
+
+            <!-- MANTENIMIENTOS -->
+            <div class="nav-item px-3">
+                <a class="nav-link" style="cursor:pointer" @onclick="ToggleSubMenu">
+                    <span class="bi bi-list-nested-nav-menu"></span>
+                    <span class="flex-grow-1">Mantenimientos</span>
+                    <i class="bi @(expandSubMenu ? "bi-chevron-down" : "bi-chevron-right")"></i>
+                </a>
+            </div>
+
+            @if (expandSubMenu && objetosMenu != null)
+            {
+                <div class="ps-3">
+                    @foreach (var objeto in objetosMenu)
+                    {
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link"
+                                     href="@($"/mantenimientos/{objeto.NombreEntidad.ToLower()}s")">
+                                <span class="bi bi-dot"></span>
+                                @objeto.NombreEntidad
+                            </NavLink>
+                        </div>
+                    }
+                </div>
+            }
+
+            <div class="nav-item px-3 mt-2">
+                <div class="nav-link text-white-50 small"><strong>CONFIGURACIÓN</strong></div>
+            </div>
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="mantenimientos/estados">
+                    <i class="bi bi-icon bi-gear-wide-connected"></i> Estados
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="mantenimientos/grupos">
+                    <i class="bi bi-icon bi-collection-fill"></i> Grupos de Estados
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="mantenimientos/objetos">
+                    <i class="bi bi-icon bi-box-seam-fill"></i> Objetos del Sistema
+                </NavLink>
+            </div>
+
+            <hr class="text-white-50" />
+
+            <!-- USUARIO -->
+            <div class="nav-item px-3 text-white-50 small">
+                Usuario:
+                <strong>@SessionService.UserName</strong>
+            </div>
+
+            <!-- LOGOUT -->
+            <div class="nav-item px-3 mt-2">
+                <button class="nav-link btn btn-link text-start"
+                        @onclick="Logout">
+                    <span class="bi bi-arrow-bar-left-nav-menu"></span>
+                    Cerrar sesión
+                </button>
+            </div>
+
+        </nav>
+    </div>
+}
+
+
+
+@* <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">Sistema Nomina ADC</a>
     </div>
@@ -95,4 +192,4 @@
             </NotAuthorized>
         </AuthorizeView>
     </nav>
-</div>
+</div> *@

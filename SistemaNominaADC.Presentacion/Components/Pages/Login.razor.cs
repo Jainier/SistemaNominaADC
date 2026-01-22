@@ -11,11 +11,20 @@ namespace SistemaNominaADC.Presentacion.Components.Pages
         private async Task OnLoginAsync(LoginRequestDTO oLoginRequestDTO)
         {
             var ok = await SessionService.LoginAsync(oLoginRequestDTO);
-
+            //await SessionService.SetTokenAsync(oResultado.Token);
             if (ok)
+            {
+                AuthStateProvider.NotifyUserAuthentication();
+                SessionService.NotifySessionChanged();
                 Navigation.NavigateTo("/");
+            }
             else
+            {
                 error = "Credenciales inválidas";
+                return;
+            }
+
+
         }
     }
 }
