@@ -31,11 +31,9 @@ namespace SistemaNominaADC.Negocio.Servicios
 
         public async Task<bool> Guardar(Estado entidad, List<int> idsGrupos)
         {
-            // Iniciamos una transacción
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // 1. Guardar o Actualizar los datos del Estado
                 if (entidad.IdEstado == 0)
                     _context.Estados.Add(entidad);
                 else
@@ -43,12 +41,10 @@ namespace SistemaNominaADC.Negocio.Servicios
 
                 await _context.SaveChangesAsync();
 
-                // 2. Borrar asociaciones viejas en la tabla puente
                 var actuales = _context.GrupoEstadoDetalles
                     .Where(x => x.IdEstado == entidad.IdEstado);
                 _context.GrupoEstadoDetalles.RemoveRange(actuales);
 
-                // 3. Insertar las nuevas asociaciones
                 foreach (var idGrupo in idsGrupos)
                 {
                     _context.GrupoEstadoDetalles.Add(new GrupoEstadoDetalle
@@ -60,13 +56,11 @@ namespace SistemaNominaADC.Negocio.Servicios
 
                 await _context.SaveChangesAsync();
 
-                // Si todo salió bien, confirmamos los cambios en la BD
                 await transaction.CommitAsync();
                 return true;
             }
             catch (Exception)
             {
-                // Si hubo un error, deshacemos todo para no dejar basura
                 await transaction.RollbackAsync();
                 return false;
             }

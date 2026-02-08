@@ -44,77 +44,36 @@ namespace SistemaNominaADC.API.Controllers
             return Ok(departamento);
         }
 
-        [HttpPost()]
+        [HttpPost]
         public async Task<IActionResult> Crear([FromBody] DepartamentoDTO departamentoDTO)
         {
-            try
-            {
+            if (departamentoDTO == null) return BadRequest("Datos insuficientes.");
 
-                Console.WriteLine("Llegó2");
-                if (departamentoDTO == null)
-                    return BadRequest("Datos incorrectos o insuficientes.");
+            var guardado = await _departamentoService.Crear(departamentoDTO);
+            if (!guardado) return StatusCode(500, "No se pudo guardar el departamento.");
 
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
-
-                var guardado = await _departamentoService.Crear(departamentoDTO);
-
-                if (!guardado)
-                    return StatusCode(StatusCodes.Status500InternalServerError,
-                        "No fue posible guardar el departamento.");
-
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("ERROR GUARDAR:");
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.InnerException?.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    $"Ocurrió un error al procesar la solicitud: {ex.Message}");
-            }
+            return CreatedAtAction(nameof(Obtener), new { id = 0 }, departamentoDTO); 
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Actualizar(int id, [FromBody] Departamento departamento)
         {
-            try
-            {
 
-                if (id <= 0)
-                    return BadRequest("El id es inválido.");
+            if (id <= 0)
+                return BadRequest("El id es inválido.");
 
-                if (departamento == null)
-                    return BadRequest("Los datos del departamento son obligatorios.");
+            if (departamento == null)
+                return BadRequest("Los datos del departamento son obligatorios.");
 
-                if (id != departamento.IdDepartamento)
-                    return BadRequest("El id del departamento no coincide.");
+            if (id != departamento.IdDepartamento)
+                return BadRequest("El id del departamento no coincide.");
 
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-                //var existente = await _departamentoService.Obtener(id);
-                //if (existente == null)
-                    //return NotFound($"No se encontró el departamento con id {id}.");
+            var actualizado = await _departamentoService.Actualizar(departamento);
 
-                var actualizado = await _departamentoService.Actualizar(departamento);
-
-                if (!actualizado)
-                    return StatusCode(
-                        StatusCodes.Status500InternalServerError,
-                        "No fue posible actualizar el departamento.");
-                //Console.WriteLine("Llegó5" + existente);
-                return NoContent();
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("ERROR GUARDAR:");
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.InnerException?.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    $"Ocurrió un error al procesar la solicitud: {ex.Message}");
-            }
+            return actualizado ? NoContent() : NotFound("No se encontró el departamento para actualizar.");
         }
 
         [HttpDelete("Eliminar/{id}")]

@@ -1,0 +1,16 @@
+﻿@inject NavigationManager Navigation
+
+@code {
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        var current = Navigation.ToBaseRelativePath(Navigation.Uri);
+
+        if (!current.Equals("not-found", StringComparison.OrdinalIgnoreCase))
+        {
+            Navigation.NavigateTo("/not-found", false);
+        }
+    }
+}

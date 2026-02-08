@@ -1,4 +1,6 @@
 ﻿@page "/login"
+@attribute [AllowAnonymous]
+
 @using SistemaNominaADC.Presentacion.Services.Auth
 @using SistemaNominaADC.Entidades.DTOs
 @using SistemaNominaADC.Presentacion.Security
@@ -6,6 +8,7 @@
 @inject CustomAuthStateProvider AuthStateProvider
 @inject NavigationManager Navigation
 @inject SessionService SessionService
+@inject AuthService AuthService
 
 <RadzenCard Style="max-width:420px;margin:auto;margin-top:6rem;padding:2rem;">
 

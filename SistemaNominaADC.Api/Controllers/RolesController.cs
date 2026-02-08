@@ -1,64 +1,73 @@
-﻿    using Microsoft.AspNetCore.Identity;
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.AspNetCore.Authorization;
-    using SistemaNominaADC.Entidades;
-    using global::SistemaNominaADC.Entidades.DTOs;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using SistemaNominaADC.Entidades.DTOs;
+using SistemaNominaADC.Negocio.Interfaces;
 
-    namespace SistemaNominaADC.API.Controllers
+namespace SistemaNominaADC.Api.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    [Authorize]
+    public class RolesController : ControllerBase
     {
-        [Route("api/[controller]")]
-        [ApiController]
-        public class RolesController : ControllerBase
+        private readonly IRolService _rolService;
+
+        public RolesController(IRolService rolService)
         {
-            private readonly RoleManager<ApplicationRole> _roleManager;
+            _rolService = rolService;
+        }
 
-            public RolesController(RoleManager<ApplicationRole> roleManager)
-            {
-                _roleManager = roleManager;
-            }
+        [HttpGet]
+        public async Task<IActionResult> ObtenerTodos()
+        {
+            var roles = await _rolService.ObtenerTodosAsync();
+            return Ok(roles);
+        }
 
-            [HttpGet]
-            public async Task<IActionResult> GetRoles()
-            {
-                var roles = await _roleManager.Roles.ToListAsync();
-                return Ok(roles);
-            }
+        [HttpGet("{sRolId}")]
+        public async Task<IActionResult> ObtenerPorId(string sRolId)
+        {
+            if (string.IsNullOrWhiteSpace(sRolId))
+                return BadRequest("El id del rol es inválido.");
 
-            [HttpPost]
-            public async Task<IActionResult> GuardarRol([FromBody] string nombreRol)
-            {
-                var result = await _roleManager.CreateAsync(new ApplicationRole(nombreRol));
-                return result.Succeeded ? Ok() : BadRequest(result.Errors);
-            }
+            var rol = await _rolService.ObtenerPorIdAsync(sRolId);
+            return Ok(rol);
+        }
 
-            [HttpPut("{id}")]
-            public async Task<IActionResult> ActualizarRol(string id, [FromBody] RolDTO rolDto)
-            {
-                var rol = await _roleManager.FindByIdAsync(id);
-                if (rol == null) return NotFound();
+        [HttpPost]
+        //[Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Crear([FromBody] RolCreateUpdateDTO dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-                rol.Name = rolDto.Nombre;
-                var result = await _roleManager.UpdateAsync(rol);
-                return result.Succeeded ? Ok() : BadRequest(result.Errors);
-            }
+            var iRolId = await _rolService.CrearAsync(dto);
+            return CreatedAtAction(nameof(ObtenerPorId), new { iRolId }, null);
+        }
 
-            [HttpPatch("Inactivar/{id}")]
-            public async Task<IActionResult> InactivarRol(string id)
-            {
-                var rol = await _roleManager.FindByIdAsync(id);
-                if (rol == null) return NotFound();
+        [HttpPut("{sRolId}")]
+        //[Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Actualizar(string sRolId, [FromBody] RolCreateUpdateDTO dto)
+        {
+            if (string.IsNullOrWhiteSpace(sRolId))
+                return BadRequest("El id del rol es inválido.");
 
-                rol.Activo = false;
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-                var result = await _roleManager.UpdateAsync(rol);
-                if (result.Succeeded)
-                {
-                    return Ok(new { mensaje = "El rol ha sido inactivado correctamente." });
-                }
+            await _rolService.ActualizarAsync(sRolId, dto);
+            return NoContent();
+        }
 
-                return BadRequest(result.Errors);
-            }
+        [HttpDelete("{sRolId}")]
+        //[Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Eliminar(string sRolId)
+        {
+            if (string.IsNullOrWhiteSpace(sRolId))
+                return BadRequest("El id del rol es inválido.");
+
+            await _rolService.EliminarAsync(sRolId);
+            return NoContent();
         }
     }
-
+}

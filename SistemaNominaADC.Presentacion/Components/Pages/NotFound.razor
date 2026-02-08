@@ -1,0 +1,18 @@
+﻿@page "/not-found"
+@attribute [AllowAnonymous]
+<h3>Página no encontrada</h3>
+
+<p>La ruta solicitada no existe.</p>
+
+<button class="btn btn-primary" @onclick="GoHome">
+    Volver al inicio
+</button>
+
+@code {
+    [Inject] private NavigationManager Navigation { get; set; } = null!;
+
+    private void GoHome()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

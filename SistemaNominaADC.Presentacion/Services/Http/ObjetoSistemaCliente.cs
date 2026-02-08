@@ -16,6 +16,7 @@ namespace SistemaNominaADC.Presentacion.Services.Http
         private readonly HttpClient _http;
         public ObjetoSistemaCliente(HttpClient http) => _http = http;
 
+
         public async Task<List<ObjetoSistema>> Lista()
         {
             return await _http.GetFromJsonAsync<List<ObjetoSistema>>("api/ObjetosSistema/Lista") ?? new();

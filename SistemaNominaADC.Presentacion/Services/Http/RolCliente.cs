@@ -14,6 +14,7 @@ namespace SistemaNominaADC.Presentacion.Services.Http
     public class RolCliente : IRolCliente
     {
         private readonly HttpClient _http;
+        private const string sRuta = "api/Roles";
 
         public RolCliente(HttpClient http)
         {
@@ -22,12 +23,24 @@ namespace SistemaNominaADC.Presentacion.Services.Http
 
         public async Task<List<RolDTO>> GetRoles()
         {
-            return await _http.GetFromJsonAsync<List<RolDTO>>("api/Roles") ?? new List<RolDTO>();
+            var sUrlFinal = new Uri(_http.BaseAddress!, "api/Roles").ToString();
+            Console.WriteLine($"[RolCliente] BaseAddress = {_http.BaseAddress}");
+            Console.WriteLine($"[RolCliente] GET => {sUrlFinal}");
+
+            var response = await _http.GetAsync("api/Roles");
+            Console.WriteLine($"[RolCliente] StatusCode = {(int)response.StatusCode} {response.StatusCode}");
+
+            var sBody = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"[RolCliente] Body = {sBody}");
+
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadFromJsonAsync<List<RolDTO>>() ?? new();
         }
 
         public async Task<bool> CrearRol(string nombre)
         {
-            var response = await _http.PostAsJsonAsync("api/Roles", nombre);
+            var response = await _http.PostAsJsonAsync(sRuta, nombre);
             return response.IsSuccessStatusCode;
         }
 

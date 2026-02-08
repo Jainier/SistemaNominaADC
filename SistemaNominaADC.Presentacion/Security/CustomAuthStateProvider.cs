@@ -16,36 +16,32 @@ namespace SistemaNominaADC.Presentacion.Security
             oSessionService = sessionService;
         }
 
-        public override Task<AuthenticationState> GetAuthenticationStateAsync()
+        public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
             if (!oSessionService.IsAuthenticated)
             {
-                var oAnonymous = new ClaimsPrincipal(
-                    new ClaimsIdentity()
-                );
-
-                return Task.FromResult(
-                    new AuthenticationState(oAnonymous)
-                );
+                await oSessionService.RestoreSessionAsync();
             }
 
-            var oClaims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, oSessionService.UserName ?? string.Empty)
-        };
-
-            foreach (var sRol in oSessionService.Roles)
+            if (!oSessionService.IsAuthenticated)
             {
-                oClaims.Add(new Claim(ClaimTypes.Role, sRol));
+                return new AuthenticationState(
+                    new ClaimsPrincipal(new ClaimsIdentity())
+                );
             }
 
-            var oIdentity = new ClaimsIdentity(oClaims, "jwt");
+            var claims = new List<Claim>
+    {
+        new Claim(ClaimTypes.Name, oSessionService.UserName ?? string.Empty)
+    };
 
-            var oUser = new ClaimsPrincipal(oIdentity);
+            foreach (var rol in oSessionService.Roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, rol));
+            }
 
-            return Task.FromResult(
-                new AuthenticationState(oUser)
-            );
+            var identity = new ClaimsIdentity(claims, "jwt");
+            return new AuthenticationState(new ClaimsPrincipal(identity));
         }
 
         public void NotifyUserAuthentication()

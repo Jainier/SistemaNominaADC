@@ -88,9 +88,9 @@ namespace SistemaNominaADC.Presentacion.Components.Layout
 
             await InvokeAsync(StateHasChanged);
         }
-        private void Logout()
+        private async void Logout()
         {
-            SessionService.Clear();
+            await SessionService.ClearAsync();
             AuthStateProvider.NotifyUserLogout();
             NavigationManager.NavigateTo("/login");
         }

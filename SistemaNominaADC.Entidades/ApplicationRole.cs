@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 
 namespace SistemaNominaADC.Entidades
 {
@@ -12,13 +7,16 @@ namespace SistemaNominaADC.Entidades
         public ApplicationRole() : base()
         {
             Activo = true;
+            EsSistema = false;
         }
 
-        public ApplicationRole(string roleName) : base(roleName)
+        public ApplicationRole(string sRoleName, bool bEsSistema = false) : base(sRoleName)
         {
             Activo = true;
+            EsSistema = bEsSistema;
         }
 
-        public bool Activo { get; set; } = true;
+        public bool Activo { get; set; }
+        public bool EsSistema { get; set; }
     }
 }

@@ -25,19 +25,15 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequestDTO request)
     {
+        if (request == null || string.IsNullOrEmpty(request.Email))
+            return BadRequest("Datos de inicio de sesión incompletos.");
+
         var user = await _userManager.FindByEmailAsync(request.Email);
 
-        if (user == null)
+        if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
             return Unauthorized("Credenciales inválidas");
 
-        var validPassword = await _userManager.CheckPasswordAsync(user, request.Password);
-
-        if (!validPassword)
-            return Unauthorized("Credenciales inválidas");
-
-        var token = GenerarToken(user);
-
-        return Ok(token);
+        return Ok(GenerarToken(user));
     }
     private LoginResponseDTO GenerarToken(ApplicationUser user)
     {

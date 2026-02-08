@@ -1,85 +1,66 @@
-﻿using SistemaNominaADC.Entidades.DTOs;
+﻿using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using Microsoft.JSInterop;
+using SistemaNominaADC.Entidades.DTOs;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace SistemaNominaADC.Presentacion.Services.Auth
 {
+
     public class SessionService
     {
-        private readonly HttpClient oHttpClient;
+        private readonly ProtectedLocalStorage _storage;
 
+        public bool IsAuthenticated { get; private set; }
         public string? Token { get; private set; }
-        public DateTime? Expiration { get; private set; }
         public string? UserName { get; private set; }
         public List<string> Roles { get; private set; } = new();
 
-        public event Action? OnSessionChanged;
-
-        public bool IsAuthenticated =>
-            !string.IsNullOrEmpty(Token) &&
-            Expiration > DateTime.UtcNow;
-
-        public SessionService(HttpClient httpClient)
+        public SessionService(ProtectedLocalStorage storage)
         {
-            oHttpClient = httpClient;
+            _storage = storage;
         }
 
-        public async Task<bool> LoginAsync(LoginRequestDTO oLoginRequestDTO)
+        public async Task SetSessionAsync(string sToken, string sUserName, List<string> lstRoles)
         {
-            HttpResponseMessage oResponse;
+            Token = sToken;
+            UserName = sUserName;
+            Roles = lstRoles;
+            IsAuthenticated = true;
 
-            try
-            {
-                oResponse = await oHttpClient.PostAsJsonAsync(
-                    "api/auth/login",
-                    oLoginRequestDTO
-                );
-            }
-            catch
-            {
-                return false;
-            }
+            await _storage.SetAsync("auth_token", sToken);
+            await _storage.SetAsync("auth_user", sUserName);
+            await _storage.SetAsync("auth_roles", lstRoles);
+        }
 
-            if (!oResponse.IsSuccessStatusCode)
-                return false;
+        public async Task<bool> RestoreSessionAsync()
+        {
+            var tokenResult = await _storage.GetAsync<string>("auth_token");
 
-            LoginResponseDTO? oLoginResponseDto =
-                await oResponse.Content.ReadFromJsonAsync<LoginResponseDTO>();
-
-            if (oLoginResponseDto is null)
+            if (!tokenResult.Success)
                 return false;
 
-            SetSession(oLoginResponseDto);
+            Token = tokenResult.Value;
+            UserName = (await _storage.GetAsync<string>("auth_user")).Value;
+            Roles = (await _storage.GetAsync<List<string>>("auth_roles")).Value ?? new();
 
+            IsAuthenticated = true;
             return true;
         }
 
-        public void SetSession(LoginResponseDTO dto)
+        public async Task ClearAsync()
         {
-            Token = dto.Token;
-            Expiration = dto.Expiration;
-            UserName = dto.UserName;
-            Roles = dto.Roles;
+            await _storage.DeleteAsync("auth_token");
+            await _storage.DeleteAsync("auth_user");
+            await _storage.DeleteAsync("auth_roles");
 
-            oHttpClient.DefaultRequestHeaders.Authorization =
-                new System.Net.Http.Headers.AuthenticationHeaderValue(
-                    "Bearer",
-                    Token
-                );
-        }
-
-        public void Clear()
-        {
+            IsAuthenticated = false;
             Token = null;
-            Expiration = null;
             UserName = null;
             Roles.Clear();
-
-            oHttpClient.DefaultRequestHeaders.Authorization = null;
         }
-        public void NotifySessionChanged()
-        {
-            OnSessionChanged?.Invoke();
-        }
-
     }
+
 }

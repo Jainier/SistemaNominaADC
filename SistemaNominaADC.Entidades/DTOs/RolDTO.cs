@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SistemaNominaADC.Entidades.DTOs
+﻿namespace SistemaNominaADC.Entidades.DTOs
 {
     public class RolDTO
     {
-        public string? Id { get; set; }
-        public string? Nombre { get; set; }
+        public string Id { get; set; } = string.Empty;
+        public string Nombre { get; set; } = string.Empty;
         public bool Activo { get; set; }
+        public bool EsSistema { get; set; }
     }
 }

@@ -2,11 +2,6 @@
 using SistemaNominaADC.Datos;
 using SistemaNominaADC.Entidades;
 using SistemaNominaADC.Negocio.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SistemaNominaADC.Negocio.Servicios
 {

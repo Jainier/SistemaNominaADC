@@ -1,87 +1,70 @@
 ﻿@page "/mantenimientos/roles"
+@attribute [Authorize]
+
 @using SistemaNominaADC.Entidades.DTOs
-@using SistemaNominaADC.Presentacion.Services.Http
-@inject IRolCliente RolCliente
-@inject IJSRuntime JS
+@using Radzen
+@using SistemaNominaADC.Presentacion.Services.Auth
 
-<PageTitle>Mantenimiento de Roles</PageTitle>
+@inject HttpClient Http
+@inject SessionService SessionService
+@inject NotificationService NotificationService
+@inject DialogService DialogService
+@inject NavigationManager Navigation
 
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Mantenimiento de Roles</h1>
-        <button class="btn btn-primary" @onclick="AbrirModalCrear">
+<h3>Mantenimiento de Roles</h3>
+
+@if (mostrarFormulario)
+{
+    <FormularioMantenimiento Titulo="@tituloFormulario"
+                             Modelo="rolActual"
+                             OnValidSubmit="Guardar"
+                             OnCancelar="Cancelar">
+
+        <EditorTemplate Context="rol">
+            <div class="mb-3">
+                <label class="form-label">Nombre del Rol</label>
+                <InputText class="form-control"
+                           @bind-Value="rol.Nombre"
+                           disabled="@esRolSistema" />
+            </div>
+        </EditorTemplate>
+
+    </FormularioMantenimiento>
+}
+else
+{
+    <div class="mb-3">
+        <button class="btn btn-primary" @onclick="Crear">
             <i class="bi bi-plus-circle"></i> Nuevo Rol
         </button>
     </div>
 
-    <table class="table table-striped table-hover mt-3">
-        <thead class="table-dark">
-            <tr>
-                <th>Nombre del Rol</th>
-                <th>Estado</th>
-                <th class="text-center">Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (listaRoles == null)
-            {
-                <tr>
-                    <td colspan="3" class="text-center">Cargando roles...</td>
-                </tr>
-            }
-            else if (!listaRoles.Any())
-            {
-                <tr>
-                    <td colspan="3" class="text-center">No hay roles registrados.</td>
-                </tr>
-            }
-            else
-            {
-                @foreach (var rol in listaRoles)
-                {
-                    <tr>
-                        <td>@rol.Nombre</td>
-                        <td>
-                            <span class="badge @(rol.Activo ? "bg-success" : "bg-danger")">
-                                @(rol.Activo ? "Activo" : "Inactivo")
-                            </span>
-                        </td>
-                        <td class="text-center">
-                            @if (rol.Activo)
-                            {
-                                <button class="btn btn-sm btn-danger" @onclick="() => ConfirmarInactivar(rol)">
-                                    <i class="bi bi-trash"></i> Inactivar
-                                </button>
-                            }
-                        </td>
-                    </tr>
-                }
-            }
-        </tbody>
-    </table>
-</div>
+    <TablaMantenimiento TItem="RolDTO"
+                        Items="listaRoles"
+                        OnRowClick="Editar">
 
-@* Modal simple para creación (puedes usar el que ya tienes estandarizado) *@
-@if (mostrarModal)
-{
-    <div class="modal fade show d-block" style="background: rgba(0,0,0,0.5);">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Crear Nuevo Rol</h5>
-                    <button type="button" class="btn-close" @onclick="() => mostrarModal = false"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label>Nombre del Rol:</label>
-                        <input type="text" class="form-control" @bind="nuevoRolNombre" placeholder="Ej: Administrador, RRHH..." />
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="() => mostrarModal = false">Cancelar</button>
-                    <button class="btn btn-primary" @onclick="GuardarRol">Guardar</button>
-                </div>
-            </div>
-        </div>
-    </div>
+        <ColumnsTemplate>
+
+            <RadzenDataGridColumn TItem="RolDTO"
+                                  Property="Nombre"
+                                  Title="Nombre" />
+
+            <RadzenDataGridColumn TItem="RolDTO"
+                                  Title="Activo">
+                <Template Context="item">
+                    @(item.Activo ? "Sí" : "No")
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="RolDTO"
+                                  Title="Sistema">
+                <Template Context="item">
+                    @(item.EsSistema ? "Sí" : "No")
+                </Template>
+            </RadzenDataGridColumn>
+
+        </ColumnsTemplate>
+
+    </TablaMantenimiento>
 }
+

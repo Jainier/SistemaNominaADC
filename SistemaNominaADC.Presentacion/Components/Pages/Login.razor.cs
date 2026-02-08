@@ -8,23 +8,31 @@ namespace SistemaNominaADC.Presentacion.Components.Pages
         private LoginRequestDTO loginModel = new();
         private string? error;
 
+        protected override void OnInitialized()
+        {
+            
+            loginModel.Email = "admin@admin.com";
+            loginModel.Password = "Admin123*";
+        }
         private async Task OnLoginAsync(LoginRequestDTO oLoginRequestDTO)
         {
-            var ok = await SessionService.LoginAsync(oLoginRequestDTO);
-            //await SessionService.SetTokenAsync(oResultado.Token);
-            if (ok)
-            {
-                AuthStateProvider.NotifyUserAuthentication();
-                SessionService.NotifySessionChanged();
-                Navigation.NavigateTo("/");
-            }
-            else
+            var resultado = await AuthService.LoginAsync(oLoginRequestDTO);
+
+            if (resultado is null)
             {
                 error = "Credenciales inválidas";
                 return;
             }
 
+            await SessionService.SetSessionAsync(
+                resultado.Token,
+                resultado.UserName,
+                resultado.Roles
+            );
 
+            AuthStateProvider.NotifyUserAuthentication();
+
+            Navigation.NavigateTo("/");
         }
     }
 }
