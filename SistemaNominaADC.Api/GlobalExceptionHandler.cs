@@ -23,6 +23,7 @@ namespace SistemaNominaADC.Api
             var (statusCode, title) = exception switch
             {
                 BusinessException => (StatusCodes.Status400BadRequest, "Regla de negocio"),
+                NotFoundException => (StatusCodes.Status404NotFound, "Recurso no encontrado"),
                 UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "No autorizado"),
                 KeyNotFoundException => (StatusCodes.Status404NotFound, "Recurso no encontrado"),
                 _ => (StatusCodes.Status500InternalServerError, "Error del Servidor")

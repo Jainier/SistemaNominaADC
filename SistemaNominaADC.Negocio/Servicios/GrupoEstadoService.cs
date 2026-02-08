@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SistemaNominaADC.Datos;
 using SistemaNominaADC.Entidades;
+using SistemaNominaADC.Negocio.Excepciones;
 using SistemaNominaADC.Negocio.Interfaces;
 
 namespace SistemaNominaADC.Negocio.Servicios
@@ -26,6 +27,19 @@ namespace SistemaNominaADC.Negocio.Servicios
 
         public async Task<bool> Guardar(GrupoEstado entidad)
         {
+            if (entidad == null)
+                throw new BusinessException("La información del grupo es obligatoria.");
+
+            if (string.IsNullOrWhiteSpace(entidad.Nombre))
+                throw new BusinessException("El nombre del grupo es requerido.");
+
+            if (entidad.IdGrupoEstado != 0)
+            {
+                var existe = await _context.GrupoEstados.AnyAsync(g => g.IdGrupoEstado == entidad.IdGrupoEstado);
+                if (!existe)
+                    throw new NotFoundException($"No se encontró el grupo con ID {entidad.IdGrupoEstado}.");
+            }
+
             if (entidad.IdGrupoEstado == 0)
                 _context.GrupoEstados.Add(entidad);
             else
@@ -36,8 +50,12 @@ namespace SistemaNominaADC.Negocio.Servicios
 
         public async Task<bool> Eliminar(int id)
         {
+            if (id <= 0)
+                throw new BusinessException("El id del grupo es inválido.");
+
             var entidad = await _context.GrupoEstados.FindAsync(id);
-            if (entidad == null) return false;
+            if (entidad == null)
+                throw new NotFoundException($"No se encontró el grupo con ID {id}.");
 
             _context.GrupoEstados.Remove(entidad);
             return await _context.SaveChangesAsync() > 0;
@@ -45,7 +63,14 @@ namespace SistemaNominaADC.Negocio.Servicios
 
         public async Task<GrupoEstado?> ObtenerPorId(int id)
         {
-            return await _context.GrupoEstados.FindAsync(id);
+            if (id <= 0)
+                throw new BusinessException("El id del grupo es inválido.");
+
+            var entidad = await _context.GrupoEstados.FindAsync(id);
+            if (entidad == null)
+                throw new NotFoundException($"No se encontró el grupo con ID {id}.");
+
+            return entidad;
         }
     }
 }
