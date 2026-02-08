@@ -16,34 +16,26 @@ namespace SistemaNominaADC.Presentacion.Security
             oSessionService = sessionService;
         }
 
-        public override async Task<AuthenticationState> GetAuthenticationStateAsync()
+        public override Task<AuthenticationState> GetAuthenticationStateAsync()
         {
             if (!oSessionService.IsAuthenticated)
             {
-                await oSessionService.RestoreSessionAsync();
-            }
-
-            if (!oSessionService.IsAuthenticated)
-            {
-                return new AuthenticationState(
-                    new ClaimsPrincipal(new ClaimsIdentity())
+                return Task.FromResult(
+                    new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()))
                 );
             }
 
             var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.Name, oSessionService.UserName ?? string.Empty)
-    };
+            {
+                 new Claim(ClaimTypes.Name, oSessionService.UserName ?? string.Empty)
+            };
 
             foreach (var rol in oSessionService.Roles)
-            {
                 claims.Add(new Claim(ClaimTypes.Role, rol));
-            }
 
             var identity = new ClaimsIdentity(claims, "jwt");
-            return new AuthenticationState(new ClaimsPrincipal(identity));
+            return Task.FromResult(new AuthenticationState(new ClaimsPrincipal(identity)));
         }
-
         public void NotifyUserAuthentication()
         {
             NotifyAuthenticationStateChanged(

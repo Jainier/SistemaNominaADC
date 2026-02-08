@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using SistemaNominaADC.Entidades;
 using SistemaNominaADC.Entidades.DTOs;
+using Microsoft.EntityFrameworkCore;
 using SistemaNominaADC.Negocio.Excepciones;
 using SistemaNominaADC.Negocio.Interfaces;
 
@@ -17,22 +18,36 @@ namespace SistemaNominaADC.Negocio.Servicios
 
         public async Task<IEnumerable<RolDTO>> ObtenerTodosAsync()
         {
-            return _roleManager.Roles.Select(r => new RolDTO
+            var roles = await _roleManager.Roles.Select(r => new RolDTO
             {
                 Id = r.Id,
                 Nombre = r.Name!,
                 Activo = r.Activo,
                 EsSistema = r.EsSistema
-            }).ToList();
+            }).ToListAsync();
+
+            return roles;
         }
 
         public async Task<RolDTO> ObtenerPorIdAsync(string sRolId)
         {
-            // Identity usa string, no int → error de diseño del contrato
-            throw new BusinessException("La obtención por Id entero no es compatible con Identity.");
+            if (string.IsNullOrWhiteSpace(sRolId))
+                throw new BusinessException("El id del rol es obligatorio.");
+
+            var rol = await _roleManager.FindByIdAsync(sRolId);
+            if (rol == null)
+                throw new NotFoundException($"No se encontró el rol con ID {sRolId}.");
+
+            return new RolDTO
+            {
+                Id = rol.Id,
+                Nombre = rol.Name!,
+                Activo = rol.Activo,
+                EsSistema = rol.EsSistema
+            };
         }
 
-        public async Task<int> CrearAsync(RolCreateUpdateDTO dto)
+        public async Task<string> CrearAsync(RolCreateUpdateDTO dto)
         {
             if (string.IsNullOrWhiteSpace(dto.Nombre))
                 throw new BusinessException("El nombre del rol es obligatorio.");
@@ -54,17 +69,52 @@ namespace SistemaNominaADC.Negocio.Servicios
                 throw new BusinessException(string.Join(" | ",
                     resultado.Errors.Select(e => e.Description)));
 
-            return 1;
+            return rol.Id;
         }
 
         public async Task ActualizarAsync(string sRolId, RolCreateUpdateDTO dto)
         {
-            throw new BusinessException("La actualización por Id entero no es compatible con Identity.");
+            if (string.IsNullOrWhiteSpace(sRolId))
+                throw new BusinessException("El id del rol es obligatorio.");
+
+            if (string.IsNullOrWhiteSpace(dto.Nombre))
+                throw new BusinessException("El nombre del rol es obligatorio.");
+
+            var rol = await _roleManager.FindByIdAsync(sRolId);
+            if (rol == null)
+                throw new NotFoundException($"No se encontró el rol con ID {sRolId}.");
+
+            if (!string.Equals(rol.Name, dto.Nombre, StringComparison.OrdinalIgnoreCase)
+                && await _roleManager.RoleExistsAsync(dto.Nombre))
+            {
+                throw new BusinessException("Ya existe un rol con ese nombre.");
+            }
+
+            rol.Name = dto.Nombre.Trim();
+            rol.NormalizedName = dto.Nombre.Trim().ToUpperInvariant();
+
+            var resultado = await _roleManager.UpdateAsync(rol);
+            if (!resultado.Succeeded)
+                throw new BusinessException(string.Join(" | ",
+                    resultado.Errors.Select(e => e.Description)));
         }
 
         public async Task EliminarAsync(string sRolId)
         {
-            throw new BusinessException("La eliminación por Id entero no es compatible con Identity.");
+            if (string.IsNullOrWhiteSpace(sRolId))
+                throw new BusinessException("El id del rol es obligatorio.");
+
+            var rol = await _roleManager.FindByIdAsync(sRolId);
+            if (rol == null)
+                throw new NotFoundException($"No se encontró el rol con ID {sRolId}.");
+
+            if (rol.EsSistema)
+                throw new BusinessException("No se puede eliminar un rol del sistema.");
+
+            var resultado = await _roleManager.DeleteAsync(rol);
+            if (!resultado.Succeeded)
+                throw new BusinessException(string.Join(" | ",
+                    resultado.Errors.Select(e => e.Description)));
         }
     }
 }

@@ -37,19 +37,29 @@ namespace SistemaNominaADC.Presentacion.Services.Auth
 
         public async Task<bool> RestoreSessionAsync()
         {
-            var tokenResult = await _storage.GetAsync<string>("auth_token");
+            Console.WriteLine("[SessionService] RestoreSessionAsync() llamado");
+            try
+            {
+                var tokenResult = await _storage.GetAsync<string>("auth_token");
 
-            if (!tokenResult.Success)
+                if (!tokenResult.Success || string.IsNullOrWhiteSpace(tokenResult.Value))
+                    return false;
+
+                Token = tokenResult.Value;
+                UserName = (await _storage.GetAsync<string>("auth_user")).Value;
+                Roles = (await _storage.GetAsync<List<string>>("auth_roles")).Value ?? new();
+
+                IsAuthenticated = true;
+                return true;
+            }
+            catch (InvalidOperationException)
+            {
+                Console.WriteLine("[SessionService] RestoreSessionAsync() bloqueado por prerender (JSInterop no disponible)");
+
+                // JSInterop no disponible (prerender). Aún no se puede restaurar.
                 return false;
-
-            Token = tokenResult.Value;
-            UserName = (await _storage.GetAsync<string>("auth_user")).Value;
-            Roles = (await _storage.GetAsync<List<string>>("auth_roles")).Value ?? new();
-
-            IsAuthenticated = true;
-            return true;
+            }
         }
-
         public async Task ClearAsync()
         {
             await _storage.DeleteAsync("auth_token");

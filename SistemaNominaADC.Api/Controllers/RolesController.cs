@@ -41,8 +41,8 @@ namespace SistemaNominaADC.Api.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var iRolId = await _rolService.CrearAsync(dto);
-            return CreatedAtAction(nameof(ObtenerPorId), new { iRolId }, null);
+            var rolId = await _rolService.CrearAsync(dto);
+            return CreatedAtAction(nameof(ObtenerPorId), new { sRolId = rolId }, null);
         }
 
         [HttpPut("{sRolId}")]

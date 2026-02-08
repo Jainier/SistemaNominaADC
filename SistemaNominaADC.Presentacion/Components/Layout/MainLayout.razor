@@ -1,8 +1,10 @@
-﻿@using SistemaNominaADC.Presentacion.Services.Auth
+﻿@using SistemaNominaADC.Presentacion.Security
+@using SistemaNominaADC.Presentacion.Services.Auth
 
 @inherits LayoutComponentBase
 @inject SessionService SessionService
 @inject NavigationManager Navigation
+@inject CustomAuthStateProvider AuthStateProvider
 @* @if (!SessionService.IsAuthenticated)
 {
     
@@ -31,13 +33,22 @@ else
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
-@* }
+
 @code {
-    protected override void OnAfterRender(bool firstRender)
+    private bool _bIntentado;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && !SessionService.IsAuthenticated)
+        if (!firstRender || _bIntentado)
+            return;
+
+        _bIntentado = true;
+
+        var bRestored = await SessionService.RestoreSessionAsync();
+        if (bRestored)
         {
-            Navigation.NavigateTo("/login", true);
+            AuthStateProvider.NotifyUserAuthentication();
+            StateHasChanged();
         }
     }
-} *@
+}

@@ -16,11 +16,11 @@ namespace SistemaNominaADC.Presentacion.Security
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
-            if (!_sessionService.IsAuthenticated)
+            /*if (!_sessionService.IsAuthenticated)
             {
                 var bRestored = await _sessionService.RestoreSessionAsync();
                 Console.WriteLine($"[AuthHandler] RestoreSessionAsync => {bRestored}");
-            }
+            }*/
 
             Console.WriteLine($"[AuthHandler] IsAuthenticated={_sessionService.IsAuthenticated}, TokenEmpty={string.IsNullOrWhiteSpace(_sessionService.Token)}");
 

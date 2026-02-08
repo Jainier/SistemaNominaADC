@@ -6,7 +6,7 @@ namespace SistemaNominaADC.Negocio.Interfaces
     {
         Task<IEnumerable<RolDTO>> ObtenerTodosAsync();
         Task<RolDTO> ObtenerPorIdAsync(string sRolId);
-        Task<int> CrearAsync(RolCreateUpdateDTO dto);
+        Task<string> CrearAsync(RolCreateUpdateDTO dto);
         Task ActualizarAsync(string sRolId, RolCreateUpdateDTO dto);
         Task EliminarAsync(string sRolId);
     }

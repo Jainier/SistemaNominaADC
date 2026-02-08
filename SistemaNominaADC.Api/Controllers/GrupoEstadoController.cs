@@ -45,7 +45,7 @@ namespace SistemaNominaADC.API.Controllers
 
             var actualizado = await _grupoService.Guardar(entidad);
 
-            return actualizado != null ? NoContent() : NotFound("No se pudo actualizar el grupo.");
+            return actualizado ? NoContent() : StatusCode(500, "No se pudo actualizar el grupo.");
         }
 
         [HttpDelete("Eliminar/{id}")]
