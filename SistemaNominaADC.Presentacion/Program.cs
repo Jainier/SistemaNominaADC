@@ -26,6 +26,8 @@ builder.Services.AddScoped<IObjetoSistemaCliente, ObjetoSistemaCliente>();
 builder.Services.AddScoped<IGrupoEstadoCliente, GrupoEstadoCliente>();
 builder.Services.AddScoped<IEstadoCliente, EstadoCliente>();
 builder.Services.AddScoped<IDepartamentoCliente, DepartamentoCliente>();
+builder.Services.AddScoped<IPuestoCliente, PuestoCliente>();
+builder.Services.AddScoped<IEmpleadoCliente, EmpleadoCliente>();
 
 
 //Servicios Radzen
