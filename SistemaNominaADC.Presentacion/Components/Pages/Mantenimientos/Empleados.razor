@@ -1,0 +1,31 @@
+@page "/mantenimientos/empleados"
+@using SistemaNominaADC.Entidades
+@attribute [Authorize]
+
+<h3>Catálogo de Empleados</h3>
+
+@if (mostrarFormulario)
+{
+    <FormularioMantenimiento Titulo="@tituloFormulario" Modelo="empleadoActual" OnValidSubmit="Guardar" OnCancelar="Cancelar" OnEliminar="Desactivar" MostrarEliminar="@(empleadoActual.IdEmpleado > 0)">
+        <EditorTemplate Context="empleado">
+            <div class="mb-2"><label>Cédula</label><InputText class="form-control" @bind-Value="empleado.Cedula" /></div>
+            <div class="mb-2"><label>Nombre</label><InputText class="form-control" @bind-Value="empleado.NombreCompleto" /></div>
+            <div class="mb-2"><label>Puesto ID</label><InputNumber class="form-control" @bind-Value="empleado.IdPuesto" /></div>
+            <div class="mb-2"><label>Salario Base</label><InputNumber class="form-control" @bind-Value="empleado.SalarioBase" /></div>
+            <div class="mb-2"><label>Fecha Ingreso</label><InputDate class="form-control" @bind-Value="empleado.FechaIngreso" /></div>
+        </EditorTemplate>
+    </FormularioMantenimiento>
+}
+else
+{
+    <button class="btn btn-primary mb-3" @onclick="Crear">Nuevo Empleado</button>
+    <TablaMantenimiento TItem="Empleado" Items="listaEmpleados" OnRowClick="Editar">
+        <ColumnsTemplate>
+            <RadzenDataGridColumn TItem="Empleado" Property="IdEmpleado" Title="ID" />
+            <RadzenDataGridColumn TItem="Empleado" Property="Cedula" Title="Cédula" />
+            <RadzenDataGridColumn TItem="Empleado" Property="NombreCompleto" Title="Nombre" />
+            <RadzenDataGridColumn TItem="Empleado" Property="IdPuesto" Title="Puesto" />
+            <RadzenDataGridColumn TItem="Empleado" Property="Estado" Title="Activo" />
+        </ColumnsTemplate>
+    </TablaMantenimiento>
+}

@@ -74,6 +74,11 @@ builder.Services.AddScoped<IObjetoSistemaService, ObjetoSistemaService>();
 builder.Services.AddScoped<IGrupoEstadoService, GrupoEstadoService>();
 builder.Services.AddScoped<IDepartamentoService, DepartamentoService>();
 builder.Services.AddScoped<IRolService, RolService>();
+builder.Services.AddScoped<IPuestoService, PuestoService>();
+builder.Services.AddScoped<IEmpleadoService, EmpleadoService>();
+builder.Services.AddScoped<ITipoPermisoService, TipoPermisoService>();
+builder.Services.AddScoped<ITipoIncapacidadService, TipoIncapacidadService>();
+builder.Services.AddScoped<ITipoHoraExtraService, TipoHoraExtraService>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -121,5 +126,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.MapControllers();
+app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 app.Run();

@@ -66,7 +66,7 @@ namespace SistemaNominaADC.Negocio.Servicios
             if (departamento.IdDepartamento <= 0)
                 throw new BusinessException("El id del departamento es inválido.");
 
-            await ValidarDepartamentoAsync(departamento.Nombre, departamento.IdEstado);
+            await ValidarDepartamentoAsync(departamento.Nombre, departamento.IdEstado, departamento.IdDepartamento);
 
             var existente = await _context.Departamentos
                     .FirstOrDefaultAsync(d => d.IdDepartamento == departamento.IdDepartamento);
@@ -89,17 +89,25 @@ namespace SistemaNominaADC.Negocio.Servicios
             if (modelo == null)
                 throw new NotFoundException($"No se encontró el departamento con id {id}.");
 
+            var tienePuestosActivos = await _context.Puestos.AnyAsync(p => p.IdDepartamento == id && p.Estado);
+            if (tienePuestosActivos)
+                throw new BusinessException("No se puede eliminar el departamento porque tiene puestos activos asociados.");
+
             _context.Departamentos.Remove(modelo);
             return await _context.SaveChangesAsync() > 0;
         }
 
-        private async Task ValidarDepartamentoAsync(string nombre, int idEstado)
+        private async Task ValidarDepartamentoAsync(string nombre, int idEstado, int idDepartamentoActual = 0)
         {
             if (string.IsNullOrWhiteSpace(nombre))
                 throw new BusinessException("El nombre del departamento es obligatorio.");
 
             if (idEstado <= 0)
                 throw new BusinessException("El estado del departamento es inválido.");
+
+            var duplicado = await _context.Departamentos.AnyAsync(d => d.Nombre == nombre && d.IdDepartamento != idDepartamentoActual);
+            if (duplicado)
+                throw new BusinessException("Ya existe un departamento con ese nombre.");
 
             var existeEstado = await _context.Estados.AnyAsync(e => e.IdEstado == idEstado);
             if (!existeEstado)

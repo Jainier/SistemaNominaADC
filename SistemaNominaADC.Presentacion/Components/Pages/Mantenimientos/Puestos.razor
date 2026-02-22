@@ -1,0 +1,38 @@
+@page "/mantenimientos/puestos"
+@using SistemaNominaADC.Entidades
+@attribute [Authorize]
+
+<h3>Catálogo de Puestos</h3>
+
+@if (mostrarFormulario)
+{
+    <FormularioMantenimiento Titulo="@tituloFormulario" Modelo="puestoActual" OnValidSubmit="Guardar" OnCancelar="Cancelar" OnEliminar="Desactivar" MostrarEliminar="@(puestoActual.IdPuesto > 0)">
+        <EditorTemplate Context="puesto">
+            <div class="mb-3">
+                <label class="form-label">Nombre</label>
+                <InputText class="form-control" @bind-Value="puesto.Nombre" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Departamento ID</label>
+                <InputNumber class="form-control" @bind-Value="puesto.IdDepartamento" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Salario Base</label>
+                <InputNumber class="form-control" @bind-Value="puesto.SalarioBase" />
+            </div>
+        </EditorTemplate>
+    </FormularioMantenimiento>
+}
+else
+{
+    <button class="btn btn-primary mb-3" @onclick="Crear">Nuevo Puesto</button>
+    <TablaMantenimiento TItem="Puesto" Items="listaPuestos" OnRowClick="Editar">
+        <ColumnsTemplate>
+            <RadzenDataGridColumn TItem="Puesto" Property="IdPuesto" Title="ID" />
+            <RadzenDataGridColumn TItem="Puesto" Property="Nombre" Title="Nombre" />
+            <RadzenDataGridColumn TItem="Puesto" Property="IdDepartamento" Title="Depto" />
+            <RadzenDataGridColumn TItem="Puesto" Property="SalarioBase" Title="Salario" />
+            <RadzenDataGridColumn TItem="Puesto" Property="Estado" Title="Activo" />
+        </ColumnsTemplate>
+    </TablaMantenimiento>
+}
