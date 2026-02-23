@@ -1,5 +1,5 @@
 ﻿@page "/mantenimientos/roles"
-@attribute [Authorize]
+@attribute [Authorize(Policy = "AdminOnly")]
 
 @using SistemaNominaADC.Entidades.DTOs
 @using Radzen
@@ -18,7 +18,9 @@
     <FormularioMantenimiento Titulo="@tituloFormulario"
                              Modelo="rolActual"
                              OnValidSubmit="Guardar"
-                             OnCancelar="Cancelar">
+                             OnCancelar="Cancelar"
+                             OnEliminar="Inactivar"
+                             MostrarEliminar="@(rolIdActual != null && !esRolSistema)">
 
         <EditorTemplate Context="rol">
             <div class="mb-3">
@@ -26,6 +28,11 @@
                 <InputText class="form-control"
                            @bind-Value="rol.Nombre"
                            disabled="@esRolSistema" />
+                <ValidationMessage For="@(() => rol.Nombre)" />
+            </div>
+            <div class="form-check mb-3">
+                <InputCheckbox class="form-check-input" id="chkRolActivo" @bind-Value="rolActivo" disabled="@esRolSistema" />
+                <label class="form-check-label" for="chkRolActivo">Activo</label>
             </div>
         </EditorTemplate>
 
@@ -50,16 +57,17 @@ else
                                   Title="Nombre" />
 
             <RadzenDataGridColumn TItem="RolDTO"
-                                  Title="Activo">
+                                  Title="Sistema">
                 <Template Context="item">
-                    @(item.Activo ? "Sí" : "No")
+                    @(item.EsSistema ? "Sí" : "No")
                 </Template>
             </RadzenDataGridColumn>
 
             <RadzenDataGridColumn TItem="RolDTO"
-                                  Title="Sistema">
+                                  Property="Activo"
+                                  Title="Estado">
                 <Template Context="item">
-                    @(item.EsSistema ? "Sí" : "No")
+                    @(item.Activo ? "Activo" : "Inactivo")
                 </Template>
             </RadzenDataGridColumn>
 

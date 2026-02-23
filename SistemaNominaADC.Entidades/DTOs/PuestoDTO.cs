@@ -13,6 +13,7 @@ namespace SistemaNominaADC.Entidades.DTO
         public decimal SalarioBase { get; set; }
         public int IdDepartamento { get; set; }
         public string? NombreDepartamento { get; set; }
-        public bool Estado { get; set; }
+        public int IdEstado { get; set; }
+        public string? NombreEstado { get; set; }
     }
 }

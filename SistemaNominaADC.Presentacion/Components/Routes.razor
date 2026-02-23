@@ -7,11 +7,18 @@
 
 
 <CascadingAuthenticationState>
-    <Router AppAssembly="@typeof(Program).Assembly">
+    <Router AppAssembly="@typeof(Program).Assembly" OnNavigateAsync="OnNavigateAsync">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
                 <NotAuthorized>
-                    <Login />
+                    @if (!SessionService.RestoreAttempted || SessionService.IsRestoring)
+                    {
+                        <div class="m-4">Restaurando sesión...</div>
+                    }
+                    else
+                    {
+                        <Login />
+                    }
                 </NotAuthorized>
             </AuthorizeRouteView>
         </Found>

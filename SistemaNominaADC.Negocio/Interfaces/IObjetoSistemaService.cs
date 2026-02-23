@@ -1,17 +1,13 @@
-﻿using SistemaNominaADC.Entidades;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SistemaNominaADC.Entidades.DTOs;
 
 namespace SistemaNominaADC.Negocio.Interfaces
 {
     public interface IObjetoSistemaService
     {
-        Task<List<ObjetoSistema>> Lista();
-        Task<bool> Guardar(ObjetoSistema entidad);
-        Task<ObjetoSistema?> ObtenerPorNombre(string nombreEntidad);
-        Task<List<ObjetoSistema>> ListaParaMenu();
+        Task<List<ObjetoSistemaDetalleDTO>> Lista();
+        Task<bool> Guardar(ObjetoSistemaCreateUpdateDTO entidad);
+        Task<bool> Inactivar(int idObjeto);
+        Task<ObjetoSistemaDetalleDTO?> ObtenerPorNombre(string nombreEntidad);
+        Task<List<ObjetoSistemaDetalleDTO>> ListaParaMenu(IEnumerable<string> rolesUsuario);
     }
 }

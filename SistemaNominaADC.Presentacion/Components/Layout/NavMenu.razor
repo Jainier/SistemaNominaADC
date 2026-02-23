@@ -37,61 +37,63 @@
                 </a>
             </div>
 
-            @if (expandSubMenu && objetosMenu != null)
+            @if (expandSubMenu && menuMantenimientos.Count > 0)
             {
                 <div class="ps-3">
-                    @foreach (var objeto in objetosMenu)
+                    @foreach (var objeto in menuMantenimientos)
                     {
                         <div class="nav-item px-3">
                             <NavLink class="nav-link"
-                                     href="@($"/mantenimientos/{objeto.NombreEntidad.ToLower()}s")">
+                                     href="@objeto.Ruta">
                                 <span class="bi bi-dot"></span>
-                                @objeto.NombreEntidad
+                                @objeto.Nombre
                             </NavLink>
                         </div>
                     }
                 </div>
             }
 
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="mantenimientos/departamentos">
-                    <i class="bi bi-building"></i> Departamentos
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="mantenimientos/puestos">
-                    <i class="bi bi-diagram-3"></i> Puestos
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="mantenimientos/empleados">
-                    <i class="bi bi-people"></i> Empleados
-                </NavLink>
-            </div>
             <div class="nav-item px-3 mt-2">
-                <div class="nav-link text-white-50 small"><strong>CONFIGURACIÓN</strong></div>
+                <div class="nav-link text-white-50 small"><strong>OPERACIONES</strong></div>
             </div>
 
             <div class="nav-item px-3">
-                <NavLink class="nav-link" href="mantenimientos/estados">
-                    <i class="bi bi-icon bi-gear-wide-connected"></i> Estados
+                <NavLink class="nav-link" href="operaciones/asistencia">
+                    <i class="bi bi-clock-history"></i> Asistencia
                 </NavLink>
             </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="mantenimientos/grupos">
-                    <i class="bi bi-icon bi-collection-fill"></i> Grupos de Estados
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="mantenimientos/objetos">
-                    <i class="bi bi-icon bi-box-seam-fill"></i> Objetos del Sistema
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="mantenimientos/roles">
-                    <i class="bi bi-shield-lock-fill"></i> Roles
-                </NavLink>
-            </div>
+
+            <AuthorizeView Policy="AdminOnly">
+                <div class="nav-item px-3 mt-2">
+                    <div class="nav-link text-white-50 small"><strong>CONFIGURACIÓN</strong></div>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="mantenimientos/estados">
+                        <i class="bi bi-icon bi-gear-wide-connected"></i> Estados
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="mantenimientos/grupos">
+                        <i class="bi bi-icon bi-collection-fill"></i> Grupos de Estados
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="mantenimientos/objetos">
+                        <i class="bi bi-icon bi-box-seam-fill"></i> Objetos del Sistema
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="mantenimientos/roles">
+                        <i class="bi bi-shield-lock-fill"></i> Roles
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="mantenimientos/usuarios">
+                        <i class="bi bi-person-gear"></i> Usuarios
+                    </NavLink>
+                </div>
+            </AuthorizeView>
 
             <hr class="text-white-50" />
 

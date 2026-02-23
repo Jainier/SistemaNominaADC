@@ -1,8 +1,8 @@
-@page "/mantenimientos/puestos"
+﻿@page "/mantenimientos/puestos"
 @using SistemaNominaADC.Entidades
 @attribute [Authorize]
 
-<h3>Catálogo de Puestos</h3>
+<h3>CatÃ¡logo de Puestos</h3>
 
 @if (mostrarFormulario)
 {
@@ -11,14 +11,27 @@
             <div class="mb-3">
                 <label class="form-label">Nombre</label>
                 <InputText class="form-control" @bind-Value="puesto.Nombre" />
+                <ValidationMessage For="@(() => puesto.Nombre)" />
             </div>
             <div class="mb-3">
-                <label class="form-label">Departamento ID</label>
-                <InputNumber class="form-control" @bind-Value="puesto.IdDepartamento" />
+                <label class="form-label">Departamento</label>
+                <InputSelect class="form-select" @bind-Value="puesto.IdDepartamento">
+                    <option value="0">-- Seleccione un Departamento --</option>
+                    @foreach (var depto in listaDepartamentos)
+                    {
+                        <option value="@depto.IdDepartamento">@depto.Nombre</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => puesto.IdDepartamento)" />
+            </div>
+            <div class="mb-3">
+                <SelectorEstado TEntidad="Puesto" @bind-IdEstadoSeleccionado="puesto.IdEstado" />
+                <ValidationMessage For="@(() => puesto.IdEstado)" />
             </div>
             <div class="mb-3">
                 <label class="form-label">Salario Base</label>
                 <InputNumber class="form-control" @bind-Value="puesto.SalarioBase" />
+                <ValidationMessage For="@(() => puesto.SalarioBase)" />
             </div>
         </EditorTemplate>
     </FormularioMantenimiento>
@@ -30,9 +43,19 @@ else
         <ColumnsTemplate>
             <RadzenDataGridColumn TItem="Puesto" Property="IdPuesto" Title="ID" />
             <RadzenDataGridColumn TItem="Puesto" Property="Nombre" Title="Nombre" />
-            <RadzenDataGridColumn TItem="Puesto" Property="IdDepartamento" Title="Depto" />
+            <RadzenDataGridColumn TItem="Puesto" Title="Depto">
+                <Template Context="item">
+                    @(item.Departamento?.Nombre ?? item.IdDepartamento.ToString())
+                </Template>
+            </RadzenDataGridColumn>
             <RadzenDataGridColumn TItem="Puesto" Property="SalarioBase" Title="Salario" />
-            <RadzenDataGridColumn TItem="Puesto" Property="Estado" Title="Activo" />
+            <RadzenDataGridColumn TItem="Puesto" Title="Estado">
+                <Template Context="item">
+                    @(item.Estado?.Nombre ?? item.Estado?.Descripcion ?? "N/A")
+                </Template>
+            </RadzenDataGridColumn>
         </ColumnsTemplate>
     </TablaMantenimiento>
 }
+
+

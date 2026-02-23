@@ -19,9 +19,11 @@ namespace SistemaNominaADC.Datos
         public DbSet<GrupoEstado> GrupoEstados { get; set; }
         public DbSet<GrupoEstadoDetalle> GrupoEstadoDetalles { get; set; }
         public DbSet<ObjetoSistema> ObjetoSistemas { get; set; }
+        public DbSet<ObjetoSistemaRol> ObjetoSistemaRoles { get; set; }
         public DbSet<TipoPermiso> TipoPermisos { get; set; }
         public DbSet<TipoIncapacidad> TipoIncapacidades { get; set; }
         public DbSet<TipoHoraExtra> TipoHoraExtras { get; set; }
+        public DbSet<Asistencia> Asistencias { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -31,7 +33,7 @@ namespace SistemaNominaADC.Datos
             {
                 entity.ToTable("Departamento");
                 entity.HasKey(e => e.IdDepartamento);
-                entity.Property(e => e.Nombre).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Nombre).IsRequired().HasMaxLength(150);
                 entity.Property(e => e.IdEstado).HasColumnName("IdEstado").IsRequired();
                 entity.HasMany<Puesto>()
                     .WithOne(p => p.Departamento)
@@ -46,8 +48,12 @@ namespace SistemaNominaADC.Datos
             {
                 entity.ToTable("Puesto");
                 entity.HasKey(e => e.IdPuesto);
-                entity.Property(e => e.Nombre).IsRequired().HasMaxLength(100);
-                entity.Property(e => e.Estado).IsRequired();
+                entity.Property(e => e.Nombre).IsRequired().HasMaxLength(150);
+                entity.Property(e => e.SalarioBase).IsRequired().HasColumnType("decimal(10,2)");
+                entity.Property(e => e.IdEstado).IsRequired();
+                entity.HasOne(e => e.Estado)
+                    .WithMany()
+                    .HasForeignKey(e => e.IdEstado);
             });
 
             builder.Entity<Empleado>(entity =>
@@ -60,8 +66,11 @@ namespace SistemaNominaADC.Datos
                     .WithMany()
                     .HasForeignKey(e => e.IdPuesto)
                     .OnDelete(DeleteBehavior.Restrict);
-                entity.Property(e => e.SalarioBase).IsRequired().HasColumnType("decimal(18,2)");
-                entity.Property(e => e.Estado).IsRequired();
+                entity.Property(e => e.SalarioBase).IsRequired().HasColumnType("decimal(10,2)");
+                entity.Property(e => e.IdEstado).IsRequired();
+                entity.HasOne(e => e.Estado)
+                    .WithMany()
+                    .HasForeignKey(e => e.IdEstado);
                 entity.Property(e => e.FechaIngreso).IsRequired();
             });
 
@@ -69,9 +78,9 @@ namespace SistemaNominaADC.Datos
             {
                 entity.ToTable("Bitacora");
                 entity.HasKey(e => e.IdBitacora);
-                entity.Property(e => e.IdEmpleado).IsRequired().HasMaxLength(100);
-                entity.Property(e => e.Accion).IsRequired().HasMaxLength(500);
-                entity.Property(e => e.Detalle).IsRequired();
+                entity.Property(e => e.Accion).HasMaxLength(150).IsUnicode(false);
+                entity.Property(e => e.Descripcion).HasColumnType("text");
+                entity.Property(e => e.IdentityUserId).HasMaxLength(450);
             });
 
             builder.Entity<Estado>(entity =>
@@ -85,16 +94,39 @@ namespace SistemaNominaADC.Datos
             builder.Entity<GrupoEstadoDetalle>()
                 .HasKey(cd => new { cd.IdGrupoEstado, cd.IdEstado });
 
-            builder.Entity<GrupoEstado>().ToTable("GrupoEstado");
+            builder.Entity<GrupoEstado>(entity =>
+            {
+                entity.ToTable("GrupoEstado");
+                entity.Property(e => e.Nombre).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.Activo).HasDefaultValue(true);
+            });
             builder.Entity<GrupoEstadoDetalle>().ToTable("GrupoEstadoDetalle");
-            builder.Entity<ObjetoSistema>().ToTable("ObjetoSistema");
+            builder.Entity<ObjetoSistema>(entity =>
+            {
+                entity.ToTable("ObjetoSistema");
+                entity.HasIndex(e => e.NombreEntidad).IsUnique();
+            });
+            builder.Entity<ObjetoSistemaRol>(entity =>
+            {
+                entity.ToTable("ObjetoSistemaRol");
+                entity.HasKey(e => new { e.IdObjeto, e.RoleName });
+                entity.Property(e => e.RoleName).HasMaxLength(256).IsRequired();
+                entity.HasOne(e => e.ObjetoSistema)
+                    .WithMany()
+                    .HasForeignKey(e => e.IdObjeto)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
 
             builder.Entity<TipoPermiso>(entity =>
             {
                 entity.ToTable("TipoPermiso");
                 entity.HasKey(e => e.IdTipoPermiso);
                 entity.Property(e => e.Nombre).IsRequired().HasMaxLength(100);
-                entity.Property(e => e.Estado).IsRequired();
+                entity.Property(e => e.IdEstado).IsRequired();
+                entity.HasOne(e => e.Estado)
+                    .WithMany()
+                    .HasForeignKey(e => e.IdEstado)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             builder.Entity<TipoIncapacidad>(entity =>
@@ -102,7 +134,11 @@ namespace SistemaNominaADC.Datos
                 entity.ToTable("TipoIncapacidad");
                 entity.HasKey(e => e.IdTipoIncapacidad);
                 entity.Property(e => e.Nombre).IsRequired().HasMaxLength(100);
-                entity.Property(e => e.Estado).IsRequired();
+                entity.Property(e => e.IdEstado).IsRequired();
+                entity.HasOne(e => e.Estado)
+                    .WithMany()
+                    .HasForeignKey(e => e.IdEstado)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             builder.Entity<TipoHoraExtra>(entity =>
@@ -110,7 +146,32 @@ namespace SistemaNominaADC.Datos
                 entity.ToTable("TipoHoraExtra");
                 entity.HasKey(e => e.IdTipoHoraExtra);
                 entity.Property(e => e.Nombre).IsRequired().HasMaxLength(100);
-                entity.Property(e => e.Estado).IsRequired();
+                entity.Property(e => e.PorcentajePago).HasColumnType("decimal(5,4)");
+                entity.Property(e => e.IdEstado).IsRequired();
+                entity.HasOne(e => e.Estado)
+                    .WithMany()
+                    .HasForeignKey(e => e.IdEstado)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            builder.Entity<Asistencia>(entity =>
+            {
+                entity.ToTable("Asistencia");
+                entity.HasKey(e => e.IdAsistencia);
+                entity.Property(e => e.Fecha).HasColumnType("date").IsRequired();
+                entity.Property(e => e.HoraEntrada).HasColumnType("datetime");
+                entity.Property(e => e.HoraSalida).HasColumnType("datetime");
+                entity.Property(e => e.Ausencia);
+                entity.Property(e => e.Justificacion).HasColumnType("text");
+                entity.Property(e => e.IdEstado).IsRequired();
+                entity.HasOne(e => e.Empleado)
+                    .WithMany()
+                    .HasForeignKey(e => e.IdEmpleado)
+                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.Estado)
+                    .WithMany()
+                    .HasForeignKey(e => e.IdEstado)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

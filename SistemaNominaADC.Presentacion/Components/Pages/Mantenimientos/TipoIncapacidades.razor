@@ -1,0 +1,42 @@
+﻿@page "/mantenimientos/tipoincapacidad"
+@page "/mantenimientos/tipoincapacidads"
+@using SistemaNominaADC.Entidades
+@attribute [Authorize]
+
+<h3>Catalogo de Tipos de Incapacidad</h3>
+
+@if (mostrarFormulario)
+{
+    <FormularioMantenimiento Titulo="@tituloFormulario"
+                             Modelo="tipoActual"
+                             OnValidSubmit="Guardar"
+                             OnCancelar="Cancelar"
+                             OnEliminar="Desactivar"
+                             MostrarEliminar="@(tipoActual.IdTipoIncapacidad > 0)">
+        <EditorTemplate Context="item">
+            <div class="mb-3">
+                <label class="form-label">Nombre</label>
+                <InputText class="form-control" @bind-Value="item.Nombre" />
+            </div>
+            <SelectorEstado TEntidad="TipoIncapacidad" @bind-IdEstadoSeleccionado="item.IdEstado" />
+        </EditorTemplate>
+    </FormularioMantenimiento>
+}
+else
+{
+    <button class="btn btn-primary mb-3" @onclick="Crear">Nuevo Tipo de Incapacidad</button>
+
+    <TablaMantenimiento TItem="TipoIncapacidad" Items="listaTipos" OnRowClick="Editar">
+        <ColumnsTemplate>
+            <RadzenDataGridColumn TItem="TipoIncapacidad" Property="IdTipoIncapacidad" Title="ID" />
+            <RadzenDataGridColumn TItem="TipoIncapacidad" Property="Nombre" Title="Nombre" />
+            <RadzenDataGridColumn TItem="TipoIncapacidad" Title="Estado">
+                <Template Context="row">
+                    @(row.Estado?.Nombre ?? row.Estado?.Descripcion ?? "N/A")
+                </Template>
+            </RadzenDataGridColumn>
+        </ColumnsTemplate>
+    </TablaMantenimiento>
+}
+
+

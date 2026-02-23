@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.Win32;
@@ -28,6 +28,12 @@ builder.Services.AddScoped<IEstadoCliente, EstadoCliente>();
 builder.Services.AddScoped<IDepartamentoCliente, DepartamentoCliente>();
 builder.Services.AddScoped<IPuestoCliente, PuestoCliente>();
 builder.Services.AddScoped<IEmpleadoCliente, EmpleadoCliente>();
+builder.Services.AddScoped<ITipoPermisoCliente, TipoPermisoCliente>();
+builder.Services.AddScoped<ITipoIncapacidadCliente, TipoIncapacidadCliente>();
+builder.Services.AddScoped<ITipoHoraExtraCliente, TipoHoraExtraCliente>();
+builder.Services.AddScoped<IAsistenciaCliente, AsistenciaCliente>();
+builder.Services.AddScoped<IUsuarioCliente, UsuarioCliente>();
+builder.Services.AddScoped<ApiErrorState>();
 
 
 //Servicios Radzen
@@ -36,15 +42,18 @@ builder.Services.AddScoped<Radzen.NotificationService>();
 builder.Services.AddScoped<Radzen.TooltipService>();
 builder.Services.AddScoped<Radzen.ContextMenuService>();
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = "Dummy";
-    options.DefaultChallengeScheme = "Dummy";
-})
-.AddScheme<AuthenticationSchemeOptions, DummyAuthHandler>(
-    "Dummy", options => { });
+builder.Services.AddAuthentication("Dummy")
+    .AddScheme<AuthenticationSchemeOptions, DummyAuthHandler>(
+        "Dummy", options => { });
 
-builder.Services.AddAuthorizationCore();
+builder.Services.AddAuthorizationCore(options =>
+{
+    options.AddPolicy("AdminOnly", policy =>
+        policy.RequireAssertion(context =>
+            context.User.IsInRole("Admin")
+            || context.User.IsInRole("Administrador")
+            || context.User.IsInRole("ADMINISTRADOR")));
+});
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 builder.Services.AddScoped<CustomAuthStateProvider>(sp =>
     (CustomAuthStateProvider)sp.GetRequiredService<AuthenticationStateProvider>());

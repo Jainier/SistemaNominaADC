@@ -71,5 +71,17 @@ namespace SistemaNominaADC.Presentacion.Components.Pages.Mantenimientos
             mostrarFormulario = false;
         }
 
+        private async Task Eliminar()
+        {
+            if (estadoActual.IdEstado <= 0) return;
+
+            if (await EstadoCliente.Eliminar(estadoActual.IdEstado))
+            {
+                mostrarFormulario = false;
+                gruposSeleccionados.Clear();
+                await CargarDatos();
+            }
+        }
+
     }
 }

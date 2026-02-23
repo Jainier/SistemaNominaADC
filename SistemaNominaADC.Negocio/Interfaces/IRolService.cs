@@ -9,5 +9,7 @@ namespace SistemaNominaADC.Negocio.Interfaces
         Task<string> CrearAsync(RolCreateUpdateDTO dto);
         Task ActualizarAsync(string sRolId, RolCreateUpdateDTO dto);
         Task EliminarAsync(string sRolId);
+        Task InactivarAsync(string sRolId);
+        Task ActivarAsync(string sRolId);
     }
 }

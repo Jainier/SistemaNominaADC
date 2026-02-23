@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SistemaNominaADC.Api;
+using SistemaNominaADC.Api.Security;
 using SistemaNominaADC.Datos;
 using SistemaNominaADC.Entidades;
 using SistemaNominaADC.Negocio.Interfaces;
@@ -71,14 +72,17 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddScoped<IEstadoService, EstadoService>();
 builder.Services.AddScoped<IObjetoSistemaService, ObjetoSistemaService>();
+builder.Services.AddScoped<IObjetoSistemaAuthorizationService, ObjetoSistemaAuthorizationService>();
 builder.Services.AddScoped<IGrupoEstadoService, GrupoEstadoService>();
 builder.Services.AddScoped<IDepartamentoService, DepartamentoService>();
 builder.Services.AddScoped<IRolService, RolService>();
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IPuestoService, PuestoService>();
 builder.Services.AddScoped<IEmpleadoService, EmpleadoService>();
 builder.Services.AddScoped<ITipoPermisoService, TipoPermisoService>();
 builder.Services.AddScoped<ITipoIncapacidadService, TipoIncapacidadService>();
 builder.Services.AddScoped<ITipoHoraExtraService, TipoHoraExtraService>();
+builder.Services.AddScoped<IAsistenciaService, AsistenciaService>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

@@ -1,0 +1,41 @@
+﻿@page "/mantenimientos/tipopermisos"
+@using SistemaNominaADC.Entidades
+@attribute [Authorize]
+
+<h3>Catalogo de Tipos de Permiso</h3>
+
+@if (mostrarFormulario)
+{
+    <FormularioMantenimiento Titulo="@tituloFormulario"
+                             Modelo="tipoActual"
+                             OnValidSubmit="Guardar"
+                             OnCancelar="Cancelar"
+                             OnEliminar="Desactivar"
+                             MostrarEliminar="@(tipoActual.IdTipoPermiso > 0)">
+        <EditorTemplate Context="item">
+            <div class="mb-3">
+                <label class="form-label">Nombre</label>
+                <InputText class="form-control" @bind-Value="item.Nombre" />
+            </div>
+            <SelectorEstado TEntidad="TipoPermiso" @bind-IdEstadoSeleccionado="item.IdEstado" />
+        </EditorTemplate>
+    </FormularioMantenimiento>
+}
+else
+{
+    <button class="btn btn-primary mb-3" @onclick="Crear">Nuevo Tipo de Permiso</button>
+
+    <TablaMantenimiento TItem="TipoPermiso" Items="listaTipos" OnRowClick="Editar">
+        <ColumnsTemplate>
+            <RadzenDataGridColumn TItem="TipoPermiso" Property="IdTipoPermiso" Title="ID" />
+            <RadzenDataGridColumn TItem="TipoPermiso" Property="Nombre" Title="Nombre" />
+            <RadzenDataGridColumn TItem="TipoPermiso" Title="Estado">
+                <Template Context="row">
+                    @(row.Estado?.Nombre ?? row.Estado?.Descripcion ?? "N/A")
+                </Template>
+            </RadzenDataGridColumn>
+        </ColumnsTemplate>
+    </TablaMantenimiento>
+}
+
+

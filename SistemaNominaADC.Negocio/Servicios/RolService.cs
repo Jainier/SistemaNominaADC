@@ -101,6 +101,12 @@ namespace SistemaNominaADC.Negocio.Servicios
 
         public async Task EliminarAsync(string sRolId)
         {
+            // Seguridad: mantener borrado lógico incluso si se llama al endpoint DELETE legacy.
+            await InactivarAsync(sRolId);
+        }
+
+        public async Task InactivarAsync(string sRolId)
+        {
             if (string.IsNullOrWhiteSpace(sRolId))
                 throw new BusinessException("El id del rol es obligatorio.");
 
@@ -109,12 +115,27 @@ namespace SistemaNominaADC.Negocio.Servicios
                 throw new NotFoundException($"No se encontró el rol con ID {sRolId}.");
 
             if (rol.EsSistema)
-                throw new BusinessException("No se puede eliminar un rol del sistema.");
+                throw new BusinessException("No se puede inactivar un rol del sistema.");
 
-            var resultado = await _roleManager.DeleteAsync(rol);
+            rol.Activo = false;
+            var resultado = await _roleManager.UpdateAsync(rol);
             if (!resultado.Succeeded)
-                throw new BusinessException(string.Join(" | ",
-                    resultado.Errors.Select(e => e.Description)));
+                throw new BusinessException(string.Join(" | ", resultado.Errors.Select(e => e.Description)));
+        }
+
+        public async Task ActivarAsync(string sRolId)
+        {
+            if (string.IsNullOrWhiteSpace(sRolId))
+                throw new BusinessException("El id del rol es obligatorio.");
+
+            var rol = await _roleManager.FindByIdAsync(sRolId);
+            if (rol == null)
+                throw new NotFoundException($"No se encontró el rol con ID {sRolId}.");
+
+            rol.Activo = true;
+            var resultado = await _roleManager.UpdateAsync(rol);
+            if (!resultado.Succeeded)
+                throw new BusinessException(string.Join(" | ", resultado.Errors.Select(e => e.Description)));
         }
     }
 }

@@ -13,12 +13,205 @@ main {
 }
 
 .top-row {
-    background-color: #f7f7f7;
+    background: linear-gradient(90deg, #eef4ff 0%, #f7f1ff 100%);
     border-bottom: 1px solid #d6d5d5;
     justify-content: flex-end;
-    height: 3.5rem;
+    min-height: 4rem;
     display: flex;
     align-items: center;
+}
+
+.topbar-shell {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    justify-content: flex-end;
+}
+
+.topbar-card {
+    position: relative;
+}
+
+.topbar-trigger {
+    border: 1px solid #cfd9ea;
+    background: rgba(255, 255, 255, 0.92);
+    color: #10213d;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.8rem;
+    cursor: pointer;
+    transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+.topbar-trigger:hover {
+    border-color: #9fb2d6;
+    background: #ffffff;
+}
+
+.topbar-trigger.is-open {
+    border-color: #4966a8;
+    box-shadow: 0 0 0 3px rgba(73, 102, 168, 0.12);
+    background: #fff;
+}
+
+.topbar-trigger-text {
+    font-weight: 600;
+    font-size: 0.88rem;
+}
+
+.topbar-icon {
+    font-size: 1rem;
+    line-height: 1;
+    color: #263f78;
+}
+
+.topbar-badge {
+    min-width: 1.2rem;
+    height: 1.2rem;
+    border-radius: 999px;
+    background: #dc2626;
+    color: #fff;
+    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.25rem;
+}
+
+.topbar-chevron {
+    color: #61748f;
+    font-size: 0.8rem;
+}
+
+.topbar-user-main {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+    align-items: flex-start;
+    min-width: 0;
+}
+
+.topbar-user-main small {
+    color: #64748b;
+    font-size: 0.72rem;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.topbar-user-trigger {
+    min-width: 260px;
+    justify-content: space-between;
+}
+
+.topbar-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.35rem);
+    min-width: 280px;
+    max-width: 360px;
+    background: #ffffff;
+    border: 1px solid #d6dfef;
+    border-radius: 14px;
+    box-shadow: 0 14px 38px rgba(19, 33, 68, 0.14);
+    padding: 0.5rem;
+    z-index: 20;
+}
+
+.topbar-dropdown-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.25rem 0.4rem 0.45rem 0.4rem;
+    border-bottom: 1px solid #eef2f7;
+    margin-bottom: 0.35rem;
+    color: #243b67;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.topbar-link-btn {
+    padding: 0;
+    text-decoration: none !important;
+    color: #385ca8;
+    font-size: 0.78rem;
+}
+
+.topbar-link-btn:disabled {
+    color: #9aa8bf;
+    cursor: not-allowed;
+}
+
+.topbar-user-dropdown {
+    min-width: 340px;
+}
+
+.topbar-empty {
+    padding: 0.5rem;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.topbar-item {
+    padding: 0.45rem 0.5rem;
+    border-radius: 10px;
+}
+
+.topbar-item-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.topbar-item:hover {
+    background: #f8fbff;
+}
+
+.topbar-item + .topbar-item {
+    margin-top: 0.25rem;
+    border-top: 1px solid #eef2f7;
+}
+
+.topbar-item-title {
+    font-size: 0.75rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.topbar-icon-btn {
+    border: none;
+    background: transparent;
+    color: #8a98ae;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+}
+
+.topbar-icon-btn:hover {
+    background: #e8eef8;
+    color: #2e4b88;
+}
+
+.topbar-item-desc {
+    font-size: 0.9rem;
+    color: #0f172a;
+    word-break: break-word;
+}
+
+.topbar-roles-select {
+    margin-top: 0.35rem;
+    border-color: #cfd9ea;
 }
 
     .top-row ::deep a, .top-row ::deep .btn-link {
@@ -39,10 +232,40 @@ main {
 @media (max-width: 640.98px) {
     .top-row {
         justify-content: space-between;
+        height: auto;
+        min-height: 3.5rem;
+        padding-top: 0.35rem;
+        padding-bottom: 0.35rem;
     }
 
     .top-row ::deep a, .top-row ::deep .btn-link {
         margin-left: 0;
+    }
+
+    .topbar-shell {
+        width: 100%;
+        justify-content: flex-end;
+        gap: 0.45rem;
+    }
+
+    .topbar-dropdown {
+        right: 0;
+        left: auto;
+        min-width: 240px;
+        max-width: min(320px, 92vw);
+    }
+
+    .topbar-user-trigger {
+        min-width: 0;
+        max-width: 62vw;
+    }
+
+    .topbar-trigger-text {
+        display: none;
+    }
+
+    .topbar-user-main small {
+        max-width: 42vw;
     }
 }
 
@@ -61,7 +284,7 @@ main {
     .top-row {
         position: sticky;
         top: 0;
-        z-index: 1;
+        z-index: 5;
     }
 
     .top-row.auth ::deep a:first-child {

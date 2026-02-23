@@ -1,18 +1,48 @@
-@page "/mantenimientos/empleados"
+﻿@page "/mantenimientos/empleados"
 @using SistemaNominaADC.Entidades
 @attribute [Authorize]
 
-<h3>Catálogo de Empleados</h3>
+<h3>CatÃ¡logo de Empleados</h3>
 
 @if (mostrarFormulario)
 {
     <FormularioMantenimiento Titulo="@tituloFormulario" Modelo="empleadoActual" OnValidSubmit="Guardar" OnCancelar="Cancelar" OnEliminar="Desactivar" MostrarEliminar="@(empleadoActual.IdEmpleado > 0)">
         <EditorTemplate Context="empleado">
-            <div class="mb-2"><label>Cédula</label><InputText class="form-control" @bind-Value="empleado.Cedula" /></div>
-            <div class="mb-2"><label>Nombre</label><InputText class="form-control" @bind-Value="empleado.NombreCompleto" /></div>
-            <div class="mb-2"><label>Puesto ID</label><InputNumber class="form-control" @bind-Value="empleado.IdPuesto" /></div>
-            <div class="mb-2"><label>Salario Base</label><InputNumber class="form-control" @bind-Value="empleado.SalarioBase" /></div>
-            <div class="mb-2"><label>Fecha Ingreso</label><InputDate class="form-control" @bind-Value="empleado.FechaIngreso" /></div>
+            <div class="mb-2">
+                <label>CÃ©dula</label>
+                <InputText class="form-control" @bind-Value="empleado.Cedula" />
+                <ValidationMessage For="@(() => empleado.Cedula)" />
+            </div>
+            <div class="mb-2">
+                <label>Nombre</label>
+                <InputText class="form-control" @bind-Value="empleado.NombreCompleto" />
+                <ValidationMessage For="@(() => empleado.NombreCompleto)" />
+            </div>
+            <div class="mb-2">
+                <label>Puesto</label>
+                <InputSelect class="form-select" @bind-Value="empleado.IdPuesto">
+                    <option value="0">-- Seleccione un Puesto --</option>
+                    @foreach (var puesto in listaPuestos)
+                    {
+                        <option value="@puesto.IdPuesto">@puesto.Nombre</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => empleado.IdPuesto)" />
+            </div>
+            <div class="mb-2">
+                <SelectorEstado TEntidad="Empleado" @bind-IdEstadoSeleccionado="empleado.IdEstado" />
+                <ValidationMessage For="@(() => empleado.IdEstado)" />
+            </div>
+            <div class="mb-2">
+                <label>Salario Base</label>
+                <InputNumber class="form-control" @bind-Value="empleado.SalarioBase" />
+                <ValidationMessage For="@(() => empleado.SalarioBase)" />
+            </div>
+            <div class="mb-2">
+                <label>Fecha Ingreso</label>
+                <InputDate class="form-control" @bind-Value="empleado.FechaIngreso" />
+                <ValidationMessage For="@(() => empleado.FechaIngreso)" />
+            </div>
         </EditorTemplate>
     </FormularioMantenimiento>
 }
@@ -22,10 +52,20 @@ else
     <TablaMantenimiento TItem="Empleado" Items="listaEmpleados" OnRowClick="Editar">
         <ColumnsTemplate>
             <RadzenDataGridColumn TItem="Empleado" Property="IdEmpleado" Title="ID" />
-            <RadzenDataGridColumn TItem="Empleado" Property="Cedula" Title="Cédula" />
+            <RadzenDataGridColumn TItem="Empleado" Property="Cedula" Title="CÃ©dula" />
             <RadzenDataGridColumn TItem="Empleado" Property="NombreCompleto" Title="Nombre" />
-            <RadzenDataGridColumn TItem="Empleado" Property="IdPuesto" Title="Puesto" />
-            <RadzenDataGridColumn TItem="Empleado" Property="Estado" Title="Activo" />
+            <RadzenDataGridColumn TItem="Empleado" Title="Puesto">
+                <Template Context="item">
+                    @(item.Puesto?.Nombre ?? item.IdPuesto.ToString())
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Empleado" Title="Estado">
+                <Template Context="item">
+                    @(item.Estado?.Nombre ?? item.Estado?.Descripcion ?? "N/A")
+                </Template>
+            </RadzenDataGridColumn>
         </ColumnsTemplate>
     </TablaMantenimiento>
 }
+
+

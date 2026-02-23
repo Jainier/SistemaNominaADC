@@ -69,5 +69,25 @@ namespace SistemaNominaADC.Api.Controllers
             await _rolService.EliminarAsync(sRolId);
             return NoContent();
         }
+
+        [HttpPatch("InactivarRol/{sRolId}")]
+        public async Task<IActionResult> InactivarRol(string sRolId)
+        {
+            if (string.IsNullOrWhiteSpace(sRolId))
+                return BadRequest("El id del rol es inválido.");
+
+            await _rolService.InactivarAsync(sRolId);
+            return NoContent();
+        }
+
+        [HttpPatch("ActivarRol/{sRolId}")]
+        public async Task<IActionResult> ActivarRol(string sRolId)
+        {
+            if (string.IsNullOrWhiteSpace(sRolId))
+                return BadRequest("El id del rol es inválido.");
+
+            await _rolService.ActivarAsync(sRolId);
+            return NoContent();
+        }
     }
 }

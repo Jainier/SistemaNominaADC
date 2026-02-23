@@ -9,6 +9,8 @@ Antes de construir un módulo nuevo, Codex debe:
 1) Buscar si ya existe (Entidad/DbSet/Service/Controller/UI/Cliente HTTP).
 2) Si existe, revisarlo y aplicar mejoras puntuales sin romper compatibilidad.
 3) Si NO existe, implementarlo siguiendo el patrón actual del proyecto.
+4) Se debe validar todas las entidades contra en el archivo "Scripts BD.sql";
+5) Los estados deben manejarse como catalogo en todos los Mantenimientos, a como lo dicta la BD.
 
 ---
 

@@ -41,9 +41,19 @@ namespace SistemaNominaADC.Negocio.Servicios
             }
 
             if (entidad.IdGrupoEstado == 0)
+            {
+                entidad.Activo = true;
                 _context.GrupoEstados.Add(entidad);
+            }
             else
-                _context.GrupoEstados.Update(entidad);
+            {
+                var actual = await _context.GrupoEstados.FirstOrDefaultAsync(g => g.IdGrupoEstado == entidad.IdGrupoEstado)
+                    ?? throw new NotFoundException($"No se encontró el grupo con ID {entidad.IdGrupoEstado}.");
+
+                actual.Nombre = entidad.Nombre;
+                actual.Descripcion = entidad.Descripcion;
+                // El estado Activo se gestiona por desactivación lógica.
+            }
 
             return await _context.SaveChangesAsync() > 0;
         }
@@ -57,7 +67,7 @@ namespace SistemaNominaADC.Negocio.Servicios
             if (entidad == null)
                 throw new NotFoundException($"No se encontró el grupo con ID {id}.");
 
-            _context.GrupoEstados.Remove(entidad);
+            entidad.Activo = false;
             return await _context.SaveChangesAsync() > 0;
         }
 

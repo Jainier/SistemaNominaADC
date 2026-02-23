@@ -1,26 +1,34 @@
 ﻿@page "/mantenimientos/estados"
-@attribute [Authorize]
+@attribute [Authorize(Policy = "AdminOnly")]
 
 @if (mostrarFormulario)
 {
     <FormularioMantenimiento Titulo="@tituloFormulario" Modelo="estadoActual"
-                             OnValidSubmit="Guardar" OnCancelar="Cancelar">
+                             OnValidSubmit="Guardar" OnCancelar="Cancelar"
+                             OnEliminar="Eliminar" MostrarEliminar="@(estadoActual.IdEstado > 0)">
         <EditorTemplate Context="est">
             <div class="mb-3">
                 <label>Código Interno</label>
                 <InputNumber class="form-control" @bind-Value="est.Codigo" />
+                <ValidationMessage For="@(() => est.Codigo)" />
             </div>
             <div class="mb-3">
                 <label>Nombre del Estado</label>
                 <InputText class="form-control" @bind-Value="est.Nombre" />
+                <ValidationMessage For="@(() => est.Nombre)" />
             </div>
             <div class="mb-3">
                 <label>Descripción</label>
                 <InputTextArea class="form-control" @bind-Value="est.Descripcion" />
+                <ValidationMessage For="@(() => est.Descripcion)" />
             </div>
             <div class="form-check mb-3">
-                <InputCheckbox class="form-check-input" @bind-Value="est.EstadoActivo" id="chkActivo" />
-                <label class="form-check-label" for="chkActivo">Estado Habilitado para el Sistema</label>
+                <input class="form-check-input"
+                       type="checkbox"
+                       id="chkActivo"
+                       checked="@(est.EstadoActivo ?? false)"
+                       @onchange="@(e => { est.EstadoActivo = e.Value is bool b && b; })" />
+                <label class="form-check-label" for="chkActivo">Activo</label>
             </div>
             @*Grupos de estados*@
             <div class="d-flex flex-wrap gap-2">
@@ -81,11 +89,10 @@ else
                                       Title="Descripción" />
 
                 <RadzenDataGridColumn TItem="Estado"
-                                      Title="¿Activo?">
+                                      Property="EstadoActivo"
+                                      Title="Estado">
                     <Template Context="item">
-                        <span class="badge @(item.EstadoActivo ? "bg-success" : "bg-danger")">
-                            @(item.EstadoActivo ? "Sí" : "No")
-                        </span>
+                        @((item.EstadoActivo ?? false) ? "Activo" : "Inactivo")
                     </Template>
                 </RadzenDataGridColumn>
 

@@ -1,7 +1,5 @@
-﻿using Azure;
 using SistemaNominaADC.Entidades;
 using System.Net.Http.Json;
-using static System.Net.WebRequestMethods;
 
 namespace SistemaNominaADC.Presentacion.Services.Http
 {
@@ -16,48 +14,102 @@ namespace SistemaNominaADC.Presentacion.Services.Http
     public class DepartamentoCliente : IDepartamentoCliente
     {
         private readonly HttpClient _http;
-        public DepartamentoCliente(HttpClient http) => _http = http;
+        private readonly ApiErrorState _apiError;
 
-        public async Task<List<Departamento>> Lista() =>
-            await _http.GetFromJsonAsync<List<Departamento>>("api/Departamento/") ?? new();
+        public DepartamentoCliente(HttpClient http, ApiErrorState apiError)
+        {
+            _http = http;
+            _apiError = apiError;
+        }
 
-        public async Task<Departamento?> Obtener(int id) =>
-            await _http.GetFromJsonAsync<Departamento>($"api/Departamento/{id}");
+        public async Task<List<Departamento>> Lista()
+        {
+            _apiError.Clear();
+            try
+            {
+                var response = await _http.GetAsync("api/Departamento/");
+                if (!response.IsSuccessStatusCode)
+                {
+                    await response.SetApiErrorAsync(_apiError, "No autorizado para consultar departamentos.");
+                    return new();
+                }
+
+                return await response.Content.ReadFromJsonAsync<List<Departamento>>() ?? new();
+            }
+            catch (Exception ex)
+            {
+                _apiError.SetError($"Error al cargar departamentos: {ex.Message}");
+                return new();
+            }
+        }
+
+        public async Task<Departamento?> Obtener(int id)
+        {
+            _apiError.Clear();
+            if (!_apiError.TryValidatePositiveId(id, "id del departamento")) return null;
+            try
+            {
+                var response = await _http.GetAsync($"api/Departamento/{id}");
+                if (!response.IsSuccessStatusCode)
+                {
+                    await response.SetApiErrorAsync(_apiError, "No autorizado para consultar el departamento.");
+                    return null;
+                }
+
+                return await response.Content.ReadFromJsonAsync<Departamento>();
+            }
+            catch (Exception ex)
+            {
+                _apiError.SetError($"Error al cargar el departamento: {ex.Message}");
+                return null;
+            }
+        }
 
         public async Task<bool> Guardar(Departamento depto)
         {
+            _apiError.Clear();
+            if (!_apiError.TryValidateModel(depto, "Los datos del departamento son obligatorios.")) return false;
             try
             {
-                HttpResponseMessage response;
-
-                if (depto.IdDepartamento == 0)
-                {
-                    Console.WriteLine("Llegó 1");
-                    response = await _http.PostAsJsonAsync("api/Departamento", depto);
-                    Console.WriteLine(response.RequestMessage);
-
-                }
-                else
-                {
-                    response = await _http.PutAsJsonAsync(
-                        $"api/departamento/{depto.IdDepartamento}", depto);
-                }
+                HttpResponseMessage response = depto.IdDepartamento == 0
+                    ? await _http.PostAsJsonAsync("api/Departamento", depto)
+                    : await _http.PutAsJsonAsync($"api/departamento/{depto.IdDepartamento}", depto);
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine($"ERROR1: {response.StatusCode}");
+                    await response.SetApiErrorAsync(_apiError, "No autorizado para guardar departamentos.");
                     return false;
                 }
 
-                return response.IsSuccessStatusCode;
+                return true;
             }
-             catch(Exception ex)
+            catch (Exception ex)
             {
-                Console.WriteLine($"ERROR2: {ex.Message}");
+                _apiError.SetError($"Error al guardar el departamento: {ex.Message}");
                 return false;
             }
         }
-        public async Task<bool> Eliminar(int id) =>
-            (await _http.DeleteAsync($"api/Departamento/Eliminar/{id}")).IsSuccessStatusCode;
+
+        public async Task<bool> Eliminar(int id)
+        {
+            _apiError.Clear();
+            if (!_apiError.TryValidatePositiveId(id, "id del departamento")) return false;
+            try
+            {
+                var response = await _http.DeleteAsync($"api/Departamento/Eliminar/{id}");
+                if (!response.IsSuccessStatusCode)
+                {
+                    await response.SetApiErrorAsync(_apiError, "No autorizado para eliminar departamentos.");
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _apiError.SetError($"Error al eliminar el departamento: {ex.Message}");
+                return false;
+            }
+        }
     }
 }

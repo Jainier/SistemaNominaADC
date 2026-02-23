@@ -89,11 +89,13 @@ namespace SistemaNominaADC.Negocio.Servicios
             if (modelo == null)
                 throw new NotFoundException($"No se encontró el departamento con id {id}.");
 
-            var tienePuestosActivos = await _context.Puestos.AnyAsync(p => p.IdDepartamento == id && p.Estado);
+            var idEstadoActivo = await ObtenerIdEstadoPorNombre("Activo");
+            var tienePuestosActivos = await _context.Puestos.AnyAsync(p => p.IdDepartamento == id && p.IdEstado == idEstadoActivo);
             if (tienePuestosActivos)
                 throw new BusinessException("No se puede eliminar el departamento porque tiene puestos activos asociados.");
 
-            _context.Departamentos.Remove(modelo);
+            var idEstadoInactivo = await ObtenerIdEstadoPorNombre("Inactivo");
+            modelo.IdEstado = idEstadoInactivo;
             return await _context.SaveChangesAsync() > 0;
         }
 
@@ -112,6 +114,14 @@ namespace SistemaNominaADC.Negocio.Servicios
             var existeEstado = await _context.Estados.AnyAsync(e => e.IdEstado == idEstado);
             if (!existeEstado)
                 throw new NotFoundException($"No se encontró el estado con id {idEstado}.");
+        }
+
+        private async Task<int> ObtenerIdEstadoPorNombre(string nombre)
+        {
+            var estado = await _context.Estados.FirstOrDefaultAsync(e => e.Nombre == nombre);
+            if (estado == null)
+                throw new BusinessException($"No se encontró el estado '{nombre}'.");
+            return estado.IdEstado;
         }
     }
 }

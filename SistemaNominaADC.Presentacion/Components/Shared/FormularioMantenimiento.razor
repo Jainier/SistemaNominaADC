@@ -13,13 +13,13 @@
             @EditorTemplate(Modelo)
 
             <div class="mt-4 d-flex justify-content-between">
-                <!-- IZQUIERDA: ELIMINAR -->
+                <!-- IZQUIERDA: DESACTIVAR -->
                 @if (MostrarEliminar && OnEliminar.HasDelegate)
                 {
                     <button type="button"
                             class="btn btn-danger"
                             @onclick="OnEliminar">
-                        <i class="bi bi-trash"></i> Eliminar
+                        <i class="bi bi-slash-circle"></i> Desactivar
                     </button>
                 }
 

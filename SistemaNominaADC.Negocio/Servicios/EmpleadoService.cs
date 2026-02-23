@@ -11,9 +11,14 @@ public class EmpleadoService : IEmpleadoService
     private readonly ApplicationDbContext _context;
     public EmpleadoService(ApplicationDbContext context) => _context = context;
 
-    public Task<List<Empleado>> Lista() => _context.Empleados.Include(e => e.Puesto).ToListAsync();
+    public Task<List<Empleado>> Lista() => _context.Empleados
+        .Include(e => e.Puesto)
+        .Include(e => e.Estado)
+        .ToListAsync();
 
-    public async Task<Empleado> Obtener(int id) => await _context.Empleados.Include(e => e.Puesto)
+    public async Task<Empleado> Obtener(int id) => await _context.Empleados
+        .Include(e => e.Puesto)
+        .Include(e => e.Estado)
         .FirstOrDefaultAsync(x => x.IdEmpleado == id) ?? throw new NotFoundException("Empleado no encontrado.");
 
     public async Task<Empleado> Crear(Empleado modelo)
@@ -35,7 +40,7 @@ public class EmpleadoService : IEmpleadoService
         actual.SalarioBase = modelo.SalarioBase;
         actual.FechaIngreso = modelo.FechaIngreso;
         actual.FechaSalida = modelo.FechaSalida;
-        actual.Estado = modelo.Estado;
+        actual.IdEstado = modelo.IdEstado;
         return await _context.SaveChangesAsync() > 0;
     }
 
@@ -43,7 +48,7 @@ public class EmpleadoService : IEmpleadoService
     {
         var actual = await _context.Empleados.FirstOrDefaultAsync(x => x.IdEmpleado == id)
             ?? throw new NotFoundException("Empleado no encontrado.");
-        actual.Estado = false;
+        actual.IdEstado = await ObtenerIdEstadoPorNombre("Inactivo");
         actual.FechaSalida ??= DateTime.UtcNow;
         return await _context.SaveChangesAsync() > 0;
     }
@@ -55,7 +60,18 @@ public class EmpleadoService : IEmpleadoService
         if (modelo.IdPuesto <= 0) throw new BusinessException("El puesto es obligatorio.");
         var puestoExiste = await _context.Puestos.AnyAsync(p => p.IdPuesto == modelo.IdPuesto);
         if (!puestoExiste) throw new NotFoundException("Puesto no encontrado.");
+        if (modelo.IdEstado <= 0) throw new BusinessException("El estado es obligatorio.");
+        var estadoExiste = await _context.Estados.AnyAsync(e => e.IdEstado == modelo.IdEstado);
+        if (!estadoExiste) throw new NotFoundException("Estado no encontrado.");
         var duplicado = await _context.Empleados.AnyAsync(e => e.Cedula == modelo.Cedula && e.IdEmpleado != idActual);
         if (duplicado) throw new BusinessException("Ya existe un empleado con la misma cÃ©dula.");
+    }
+
+    private async Task<int> ObtenerIdEstadoPorNombre(string nombre)
+    {
+        var estado = await _context.Estados.FirstOrDefaultAsync(e => e.Nombre == nombre);
+        if (estado == null)
+            throw new BusinessException($"No se encontró el estado '{nombre}'.");
+        return estado.IdEstado;
     }
 }

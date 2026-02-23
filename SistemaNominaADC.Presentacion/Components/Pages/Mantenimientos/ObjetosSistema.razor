@@ -1,18 +1,21 @@
 ﻿@page "/mantenimientos/objetos"
-@attribute [Authorize]
+@attribute [Authorize(Policy = "AdminOnly")]
 
 @using SistemaNominaADC.Entidades
+@using SistemaNominaADC.Entidades.DTOs
 
 <h3>Configuración de Objetos del Sistema</h3>
 
 @if (mostrarFormulario)
 {
-    <FormularioMantenimiento Titulo="@tituloFormulario" Modelo="objetoActual" OnValidSubmit="Guardar" OnCancelar="Cancelar">
+    <FormularioMantenimiento Titulo="@tituloFormulario" Modelo="objetoActual" OnValidSubmit="Guardar" OnCancelar="Cancelar"
+                             OnEliminar="Inactivar" MostrarEliminar="@(objetoActual.IdObjeto > 0)">
         <EditorTemplate Context="obj">
             <div class="mb-3">
                 <label class="form-label">Nombre de la Entidad (Clave)</label>
                 <InputText class="form-control" @bind-Value="obj.NombreEntidad" placeholder="Ej: Departamento" />
                 <div class="form-text">Debe coincidir con el nombre interno que uses en el código.</div>
+                <ValidationMessage For="@(() => obj.NombreEntidad)" />
             </div>
 
             <div class="mb-3">
@@ -27,6 +30,31 @@
                         }
                     }
                 </InputSelect>
+                <ValidationMessage For="@(() => obj.IdGrupoEstado)" />
+            </div>
+            <div class="form-check mb-3">
+                <InputCheckbox class="form-check-input" id="chkObjetoActivo" @bind-Value="objetoActivo" />
+                <label class="form-check-label" for="chkObjetoActivo">Activo</label>
+                <div class="form-text">Un objeto queda activo cuando tiene al menos un rol con acceso.</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Roles con acceso</label>
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var rol in listaRoles)
+                    {
+                        <div class="form-check border p-2 rounded shadow-sm bg-white" style="min-width: 180px;">
+                            <input class="form-check-input ms-1" type="checkbox"
+                                   id="rol-@rol.Id"
+                                   disabled="@(!objetoActivo)"
+                                   checked="@rolesSeleccionados.Contains(rol.Nombre)"
+                                   @onchange="@(e => AlternarRol(rol.Nombre, e.Value))" />
+                            <label class="form-check-label ms-4" for="rol-@rol.Id">
+                                @rol.Nombre
+                            </label>
+                        </div>
+                    }
+                </div>
             </div>
         </EditorTemplate>
     </FormularioMantenimiento>
@@ -39,28 +67,42 @@ else
         </button>
     </div>
 
-    <TablaMantenimiento TItem="ObjetoSistema"
+    <TablaMantenimiento TItem="ObjetoSistemaDetalleDTO"
                         Items="listaObjetos"
                         OnRowClick="Editar">
 
         <ColumnsTemplate>
 
-            <RadzenDataGridColumn TItem="ObjetoSistema"
+            <RadzenDataGridColumn TItem="ObjetoSistemaDetalleDTO"
                                   Property="IdObjeto"
                                   Title="ID"
                                   Width="80px" />
 
-            <RadzenDataGridColumn TItem="ObjetoSistema"
+            <RadzenDataGridColumn TItem="ObjetoSistemaDetalleDTO"
                                   Title="Entidad">
                 <Template Context="item">
                     <strong>@item.NombreEntidad</strong>
                 </Template>
             </RadzenDataGridColumn>
 
-            <RadzenDataGridColumn TItem="ObjetoSistema"
+            <RadzenDataGridColumn TItem="ObjetoSistemaDetalleDTO"
                                   Title="Grupo de Estados">
                 <Template Context="item">
-                    @(item.GrupoEstado?.Nombre ?? "Sin Grupo")
+                    @(item.NombreGrupoEstado ?? "Sin Grupo")
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="ObjetoSistemaDetalleDTO"
+                                  Title="Roles">
+                <Template Context="item">
+                    @string.Join(", ", item.Roles)
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="ObjetoSistemaDetalleDTO"
+                                  Title="Estado">
+                <Template Context="item">
+                    @((item.Roles != null && item.Roles.Count > 0) ? "Activo" : "Inactivo")
                 </Template>
             </RadzenDataGridColumn>
 

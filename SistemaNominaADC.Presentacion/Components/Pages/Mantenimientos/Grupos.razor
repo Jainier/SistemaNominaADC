@@ -1,5 +1,5 @@
 ﻿@page "/mantenimientos/grupos"
-@attribute [Authorize]
+@attribute [Authorize(Policy = "AdminOnly")]
 
 @using SistemaNominaADC.Entidades
 
@@ -7,15 +7,22 @@
 
 @if (mostrarFormulario)
 {
-    <FormularioMantenimiento Titulo="@tituloFormulario" Modelo="grupoActual" OnValidSubmit="Guardar" OnCancelar="Cancelar">
+    <FormularioMantenimiento Titulo="@tituloFormulario" Modelo="grupoActual" OnValidSubmit="Guardar" OnCancelar="Cancelar"
+                             OnEliminar="Desactivar" MostrarEliminar="@(grupoActual.IdGrupoEstado > 0)">
         <EditorTemplate Context="grupo">
             <div class="mb-3">
                 <label class="form-label">Nombre del Grupo</label>
                 <InputText class="form-control" @bind-Value="grupo.Nombre" placeholder="Ej: ESTANDAR, RRHH, NOMINA" />
+                <ValidationMessage For="@(() => grupo.Nombre)" />
             </div>
             <div class="mb-3">
                 <label class="form-label">Descripción</label>
                 <InputTextArea class="form-control" @bind-Value="grupo.Descripcion" />
+                <ValidationMessage For="@(() => grupo.Descripcion)" />
+            </div>
+            <div class="form-check mb-3">
+                <InputCheckbox class="form-check-input" id="chkGrupoActivo" @bind-Value="grupo.Activo" />
+                <label class="form-check-label" for="chkGrupoActivo">Activo</label>
             </div>
         </EditorTemplate>
     </FormularioMantenimiento>
@@ -51,6 +58,14 @@ else
                                       Property="Descripcion"
                                     Title="Descripcion">
             </RadzenDataGridColumn>
+
+                <RadzenDataGridColumn TItem="GrupoEstado"
+                                      Property="Activo"
+                                      Title="Estado">
+                    <Template Context="item">
+                        @(item.Activo ? "Activo" : "Inactivo")
+                    </Template>
+                </RadzenDataGridColumn>
 
         </ColumnsTemplate>
     </TablaMantenimiento>

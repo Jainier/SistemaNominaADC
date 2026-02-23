@@ -2,9 +2,11 @@
 @using SistemaNominaADC.Presentacion.Services.Auth
 
 @inherits LayoutComponentBase
+@implements IDisposable
 @inject SessionService SessionService
 @inject NavigationManager Navigation
 @inject CustomAuthStateProvider AuthStateProvider
+@inject SistemaNominaADC.Presentacion.Services.Http.ApiErrorState ApiError
 @* @if (!SessionService.IsAuthenticated)
 {
     
@@ -18,11 +20,106 @@ else
         </div>
 
         <main>
-            <div class="top-row px-4">
-                <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            @if (!OcultarTopbar)
+            {
+            <div class="top-row px-4" @onclick="CerrarTopbarMenus">
+                <div class="topbar-shell">
+                    <div class="topbar-card topbar-notifications" @onclick:stopPropagation="true">
+                        <button type="button" class="topbar-trigger @(mostrarNotificaciones ? "is-open" : "")" @onclick="ToggleNotificaciones" title="Notificaciones">
+                            <span class="topbar-icon"><i class="bi bi-bell"></i></span>
+                            <span class="topbar-trigger-text">Notificaciones</span>
+                            <span class="topbar-badge">@NotificacionesPendientes</span>
+                            <i class="bi @(mostrarNotificaciones ? "bi-chevron-up" : "bi-chevron-down") topbar-chevron"></i>
+                        </button>
+                        @if (mostrarNotificaciones)
+                        {
+                            <div class="topbar-dropdown">
+                            <div class="topbar-dropdown-header">
+                                <span>Notificaciones</span>
+                                <button type="button"
+                                        class="btn btn-sm btn-link topbar-link-btn"
+                                        @onclick="LimpiarNotificaciones"
+                                        disabled="@(notificaciones.Count == 0)">
+                                    Limpiar todas
+                                </button>
+                            </div>
+                            @if (notificaciones.Count == 0)
+                            {
+                                <div class="topbar-empty">No tienes notificaciones pendientes.</div>
+                            }
+                            else
+                            {
+                                @foreach (var n in notificaciones)
+                                {
+                                    <div class="topbar-item">
+                                        <div class="topbar-item-head">
+                                            <div class="topbar-item-title">@n.Titulo</div>
+                                            <button type="button" class="topbar-icon-btn" title="Descartar" @onclick="() => QuitarNotificacion(n.Id)">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </div>
+                                        <div class="topbar-item-desc">@n.Descripcion</div>
+                                    </div>
+                                }
+                            }
+                            </div>
+                        }
+                    </div>
+
+                    <div class="topbar-card topbar-user" @onclick:stopPropagation="true">
+                        <button type="button" class="topbar-trigger topbar-user-trigger @(mostrarUsuario ? "is-open" : "")" @onclick="ToggleUsuario">
+                            <span class="topbar-user-main">
+                                <strong>@(SessionService.UserName ?? "Usuario")</strong>
+                                <small>@(SessionService.Email ?? "sin-correo")</small>
+                            </span>
+                            <i class="bi @(mostrarUsuario ? "bi-chevron-up" : "bi-chevron-down") topbar-chevron"></i>
+                        </button>
+                        @if (mostrarUsuario)
+                        {
+                            <div class="topbar-dropdown topbar-user-dropdown">
+                            <div class="topbar-item">
+                                <div class="topbar-item-title">Usuario</div>
+                                <div class="topbar-item-desc">@(SessionService.UserName ?? "N/D")</div>
+                            </div>
+                            <div class="topbar-item">
+                                <div class="topbar-item-title">Correo</div>
+                                <div class="topbar-item-desc">@(SessionService.Email ?? "N/D")</div>
+                            </div>
+                            <div class="topbar-item">
+                                <div class="topbar-item-title">Rol actual</div>
+                                <div class="topbar-item-desc">@(SessionService.Roles.FirstOrDefault() ?? "Sin rol")</div>
+                            </div>
+                            <div class="topbar-item">
+                                <div class="topbar-item-title">Roles asignados</div>
+                                @if (SessionService.Roles.Count <= 1)
+                                {
+                                    <div class="topbar-item-desc">@(SessionService.Roles.FirstOrDefault() ?? "Sin roles")</div>
+                                }
+                                else
+                                {
+                                    <select class="form-select form-select-sm topbar-roles-select">
+                                        @foreach (var rol in SessionService.Roles)
+                                        {
+                                            <option>@rol</option>
+                                        }
+                                    </select>
+                                }
+                            </div>
+                            </div>
+                        }
+                    </div>
+                </div>
             </div>
+            }
 
             <article class="content px-4">
+                @if (!string.IsNullOrWhiteSpace(ApiError.Message))
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        @ApiError.Message
+                        <button type="button" class="btn-close" aria-label="Cerrar" @onclick="ApiError.Clear"></button>
+                    </div>
+                }
                 @Body
             </article>
         </main>
@@ -35,20 +132,80 @@ else
     </div>
 
 @code {
-    private bool _bIntentado;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnInitialized()
     {
-        if (!firstRender || _bIntentado)
-            return;
+        ApiError.OnChange += HandleErrorChanged;
+        Navigation.LocationChanged += OnLocationChanged;
+        ActualizarVisibilidadTopbar();
+    }
 
-        _bIntentado = true;
+    private void HandleErrorChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
 
-        var bRestored = await SessionService.RestoreSessionAsync();
-        if (bRestored)
-        {
-            AuthStateProvider.NotifyUserAuthentication();
-            StateHasChanged();
-        }
+    private bool mostrarNotificaciones;
+    private bool mostrarUsuario;
+    private bool OcultarTopbar;
+
+    private void ToggleNotificaciones()
+    {
+        mostrarNotificaciones = !mostrarNotificaciones;
+        if (mostrarNotificaciones) mostrarUsuario = false;
+    }
+
+    private void ToggleUsuario()
+    {
+        mostrarUsuario = !mostrarUsuario;
+        if (mostrarUsuario) mostrarNotificaciones = false;
+    }
+
+    private void CerrarTopbarMenus()
+    {
+        if (!mostrarNotificaciones && !mostrarUsuario) return;
+        mostrarNotificaciones = false;
+        mostrarUsuario = false;
+    }
+
+    private void LimpiarNotificaciones()
+    {
+        notificaciones.Clear();
+        mostrarNotificaciones = false;
+    }
+
+    private void QuitarNotificacion(int id)
+    {
+        var item = notificaciones.FirstOrDefault(x => x.Id == id);
+        if (item is null) return;
+        notificaciones.Remove(item);
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        ActualizarVisibilidadTopbar();
+        CerrarTopbarMenus();
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void ActualizarVisibilidadTopbar()
+    {
+        var ruta = Navigation.ToBaseRelativePath(Navigation.Uri).Trim('/').ToLowerInvariant();
+        OcultarTopbar = ruta == "login";
+    }
+
+    private List<NotificacionTopbar> notificaciones = new()
+    {
+        new(1, "Solicitud pendiente", "Tienes solicitudes pendientes de revisión."),
+        new(2, "Recordatorio", "Verifica tus marcas de asistencia del día.")
+    };
+
+    private int NotificacionesPendientes => notificaciones.Count;
+
+    private record NotificacionTopbar(int Id, string Titulo, string Descripcion);
+
+    public void Dispose()
+    {
+        ApiError.OnChange -= HandleErrorChanged;
+        Navigation.LocationChanged -= OnLocationChanged;
     }
 }

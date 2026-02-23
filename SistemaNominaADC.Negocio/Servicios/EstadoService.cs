@@ -22,7 +22,17 @@ namespace SistemaNominaADC.Negocio.Servicios
 
         public async Task<List<Estado>> Lista()
         {
-            return await _context.Estados.ToListAsync();
+            return await _context.Estados
+                .AsNoTracking()
+                .Select(e => new Estado
+                {
+                    IdEstado = e.IdEstado,
+                    Codigo = e.Codigo,
+                    Nombre = e.Nombre ?? string.Empty,
+                    Descripcion = e.Descripcion ?? string.Empty,
+                    EstadoActivo = e.EstadoActivo
+                })
+                .ToListAsync();
         }
 
         public async Task<Estado?> Obtener(int id)
@@ -30,7 +40,18 @@ namespace SistemaNominaADC.Negocio.Servicios
             if (id <= 0)
                 throw new BusinessException("El id del estado es inválido.");
 
-            var estado = await _context.Estados.FirstOrDefaultAsync(d => d.IdEstado == id);
+            var estado = await _context.Estados
+                .AsNoTracking()
+                .Where(d => d.IdEstado == id)
+                .Select(e => new Estado
+                {
+                    IdEstado = e.IdEstado,
+                    Codigo = e.Codigo,
+                    Nombre = e.Nombre ?? string.Empty,
+                    Descripcion = e.Descripcion ?? string.Empty,
+                    EstadoActivo = e.EstadoActivo
+                })
+                .FirstOrDefaultAsync();
             if (estado == null)
                 throw new NotFoundException($"No se encontró el estado con ID {id}.");
 
@@ -120,7 +141,7 @@ namespace SistemaNominaADC.Negocio.Servicios
             if (modelo == null)
                 throw new NotFoundException($"No se encontró el estado con ID {id}.");
 
-            _context.Estados.Remove(modelo);
+            modelo.EstadoActivo = false;
             return await _context.SaveChangesAsync() > 0;
         }
 
@@ -136,7 +157,14 @@ namespace SistemaNominaADC.Negocio.Servicios
 
             return await _context.GrupoEstadoDetalles
                 .Where(gd => gd.IdGrupoEstado == objeto.IdGrupoEstado)
-                .Select(gd => gd.Estado)
+                .Select(gd => new Estado
+                {
+                    IdEstado = gd.Estado.IdEstado,
+                    Codigo = gd.Estado.Codigo,
+                    Nombre = gd.Estado.Nombre ?? string.Empty,
+                    Descripcion = gd.Estado.Descripcion ?? string.Empty,
+                    EstadoActivo = gd.Estado.EstadoActivo
+                })
                 .ToListAsync();
         }
     }

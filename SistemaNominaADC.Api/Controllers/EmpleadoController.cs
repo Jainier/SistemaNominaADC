@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SistemaNominaADC.Api.Security;
 using SistemaNominaADC.Entidades;
 using SistemaNominaADC.Negocio.Interfaces;
 
@@ -6,24 +8,43 @@ namespace SistemaNominaADC.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public class EmpleadoController : ControllerBase
 {
     private readonly IEmpleadoService _service;
-    public EmpleadoController(IEmpleadoService service) => _service = service;
+    private readonly IObjetoSistemaAuthorizationService _objetoAuthService;
+
+    public EmpleadoController(IEmpleadoService service, IObjetoSistemaAuthorizationService objetoAuthService)
+    {
+        _service = service;
+        _objetoAuthService = objetoAuthService;
+    }
 
     [HttpGet]
-    public async Task<IActionResult> Lista() => Ok(await _service.Lista());
+    public async Task<IActionResult> Lista()
+    {
+        var acceso = await ValidarAccesoModuloAsync();
+        if (acceso != null) return acceso;
+
+        return Ok(await _service.Lista());
+    }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        if (id <= 0) return ValidationProblem(new ValidationProblemDetails(new Dictionary<string, string[]> { ["id"] = ["Id inválido"] }));
+        var acceso = await ValidarAccesoModuloAsync();
+        if (acceso != null) return acceso;
+
+        if (id <= 0) return ValidationProblem(new ValidationProblemDetails(new Dictionary<string, string[]> { ["id"] = ["Id invalido"] }));
         return Ok(await _service.Obtener(id));
     }
 
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] Empleado dto)
     {
+        var acceso = await ValidarAccesoModuloAsync();
+        if (acceso != null) return acceso;
+
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
         var creado = await _service.Crear(dto);
         return CreatedAtAction(nameof(Obtener), new { id = creado.IdEmpleado }, creado);
@@ -32,7 +53,11 @@ public class EmpleadoController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] Empleado dto)
     {
+        var acceso = await ValidarAccesoModuloAsync();
+        if (acceso != null) return acceso;
+
         if (id != dto.IdEmpleado) return ValidationProblem(new ValidationProblemDetails(new Dictionary<string, string[]> { ["id"] = ["El id no coincide con el cuerpo"] }));
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
         await _service.Actualizar(dto);
         return NoContent();
     }
@@ -40,7 +65,16 @@ public class EmpleadoController : ControllerBase
     [HttpDelete("Desactivar/{id:int}")]
     public async Task<IActionResult> Desactivar(int id)
     {
+        var acceso = await ValidarAccesoModuloAsync();
+        if (acceso != null) return acceso;
+
         await _service.Desactivar(id);
         return NoContent();
+    }
+
+    private async Task<IActionResult?> ValidarAccesoModuloAsync()
+    {
+        var autorizado = await _objetoAuthService.PuedeAccederModuloAsync(User, "Empleado");
+        return autorizado ? null : Forbid();
     }
 }

@@ -1,0 +1,114 @@
+﻿@page "/operaciones/asistencia"
+@attribute [Authorize]
+
+<h3>Control de Asistencia</h3>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-6">
+                <label class="form-label">Empleado</label>
+                @if (esAdministrador)
+                {
+                    <InputSelect class="form-select" @bind-Value="idEmpleadoSeleccionado">
+                        <option value="0">-- Seleccione un empleado --</option>
+                        @foreach (var empleado in empleados)
+                        {
+                            <option value="@empleado.IdEmpleado">@empleado.NombreCompleto (@empleado.Cedula)</option>
+                        }
+                    </InputSelect>
+                }
+                else
+                {
+                    <input class="form-control" value="@(empleadoActual is null ? string.Empty : $"{empleadoActual.NombreCompleto} ({empleadoActual.Cedula})")" disabled />
+                }
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Fecha</label>
+                <input class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" disabled />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Justificación (opcional)</label>
+                <InputText class="form-control" @bind-Value="justificacionMarca" />
+            </div>
+        </div>
+
+        <div class="mt-3 d-flex gap-2">
+            <button class="btn btn-success" @onclick="MarcarEntrada">Marcar Entrada</button>
+            <button class="btn btn-warning" @onclick="MarcarSalida">Marcar Salida</button>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Empleado (filtro)</label>
+                @if (esAdministrador)
+                {
+                    <InputSelect class="form-select" @bind-Value="filtroIdEmpleado">
+                        <option value="">Todos</option>
+                        @foreach (var empleado in empleados)
+                        {
+                            <option value="@empleado.IdEmpleado">@empleado.NombreCompleto</option>
+                        }
+                    </InputSelect>
+                }
+                else
+                {
+                    <input class="form-control" value="@(empleadoActual?.NombreCompleto ?? string.Empty)" disabled />
+                }
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Desde</label>
+                <InputDate class="form-control" @bind-Value="filtroDesde" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Hasta</label>
+                <InputDate class="form-control" @bind-Value="filtroHasta" />
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" @onclick="CargarAsistencias">Buscar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<TablaMantenimiento TItem="SistemaNominaADC.Entidades.Asistencia" Items="asistencias">
+    <ColumnsTemplate>
+        <RadzenDataGridColumn TItem="SistemaNominaADC.Entidades.Asistencia" Property="IdAsistencia" Title="ID" />
+        <RadzenDataGridColumn TItem="SistemaNominaADC.Entidades.Asistencia" Title="Empleado">
+            <Template Context="item">
+                @(item.Empleado?.NombreCompleto ?? item.IdEmpleado.ToString())
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="SistemaNominaADC.Entidades.Asistencia" Title="Fecha">
+            <Template Context="item">
+                @item.Fecha.ToString("yyyy-MM-dd")
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="SistemaNominaADC.Entidades.Asistencia" Title="Entrada">
+            <Template Context="item">
+                @(item.HoraEntrada?.ToString("yyyy-MM-dd HH:mm") ?? "N/A")
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="SistemaNominaADC.Entidades.Asistencia" Title="Salida">
+            <Template Context="item">
+                @(item.HoraSalida?.ToString("yyyy-MM-dd HH:mm") ?? "N/A")
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="SistemaNominaADC.Entidades.Asistencia" Title="Estado">
+            <Template Context="item">
+                @(item.Estado?.Nombre ?? item.Estado?.Descripcion ?? "N/A")
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="SistemaNominaADC.Entidades.Asistencia" Title="Justificación">
+            <Template Context="item">
+                @(!string.IsNullOrWhiteSpace(item.Justificacion) ? item.Justificacion : "-")
+            </Template>
+        </RadzenDataGridColumn>
+    </ColumnsTemplate>
+</TablaMantenimiento>
+
+

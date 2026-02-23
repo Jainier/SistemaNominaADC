@@ -15,15 +15,36 @@ namespace SistemaNominaADC.Presentacion.Components.Pages.Mantenimientos
         private string tituloFormulario = string.Empty;
         private bool mostrarFormulario;
         private bool esRolSistema;
+        private bool rolActivo = true;
+        private bool rolActivoOriginal = true;
+        private bool rolesCargados;
 
         protected override async Task OnInitializedAsync()
         {
-            if (!SessionService.IsAuthenticated)
-                await SessionService.RestoreSessionAsync();
-
-            await CargarRoles();
+            await Task.CompletedTask;
         }
 
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (!firstRender || rolesCargados || SessionService.IsRestoring)
+            {
+                return;
+            }
+
+            if (!SessionService.IsAuthenticated)
+            {
+                await SessionService.RestoreSessionAsync();
+            }
+
+            if (!SessionService.IsAuthenticated)
+            {
+                return;
+            }
+
+            await CargarRoles();
+            rolesCargados = true;
+            StateHasChanged();
+        }
         private async Task CargarRoles()
         {
             listaRoles = await RolCliente.GetRoles();
@@ -34,6 +55,8 @@ namespace SistemaNominaADC.Presentacion.Components.Pages.Mantenimientos
             rolActual = new RolCreateUpdateDTO();
             rolIdActual = null;
             esRolSistema = false;
+            rolActivo = true;
+            rolActivoOriginal = true;
             tituloFormulario = "Nuevo Rol";
             mostrarFormulario = true;
         }
@@ -47,6 +70,8 @@ namespace SistemaNominaADC.Presentacion.Components.Pages.Mantenimientos
             };
 
             esRolSistema = rol.EsSistema;
+            rolActivo = rol.Activo;
+            rolActivoOriginal = rol.Activo;
             tituloFormulario = "Editar Rol";
             mostrarFormulario = true;
         }
@@ -65,7 +90,8 @@ namespace SistemaNominaADC.Presentacion.Components.Pages.Mantenimientos
                 {
                     Id = rolIdActual,
                     Nombre = rolActual.Nombre,
-                    EsSistema = esRolSistema
+                    EsSistema = esRolSistema,
+                    Activo = rolActivo
                 };
 
                 resultado = await RolCliente.ActualizarRol(rolActualizar);
@@ -73,6 +99,16 @@ namespace SistemaNominaADC.Presentacion.Components.Pages.Mantenimientos
 
             if (resultado)
             {
+                if (rolIdActual != null && !esRolSistema && rolActivo != rolActivoOriginal)
+                {
+                    var cambioEstadoOk = rolActivo
+                        ? await RolCliente.ActivarRol(rolIdActual)
+                        : await RolCliente.InactivarRol(rolIdActual);
+
+                    if (!cambioEstadoOk)
+                        return;
+                }
+
                 mostrarFormulario = false;
                 await CargarRoles();
             }
@@ -81,6 +117,18 @@ namespace SistemaNominaADC.Presentacion.Components.Pages.Mantenimientos
         private void Cancelar()
         {
             mostrarFormulario = false;
+        }
+
+        private async Task Inactivar()
+        {
+            if (string.IsNullOrWhiteSpace(rolIdActual) || esRolSistema)
+                return;
+
+            if (await RolCliente.InactivarRol(rolIdActual))
+            {
+                mostrarFormulario = false;
+                await CargarRoles();
+            }
         }
     }
 }

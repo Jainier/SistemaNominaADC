@@ -20,9 +20,7 @@ namespace SistemaNominaADC.Presentacion.Security
         {
             if (!oSessionService.IsAuthenticated)
             {
-                return Task.FromResult(
-                    new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()))
-                );
+                return Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())));
             }
 
             var claims = new List<Claim>

@@ -1,0 +1,150 @@
+@page "/mantenimientos/usuarios"
+@attribute [Authorize(Policy = "AdminOnly")]
+
+@using SistemaNominaADC.Entidades
+@using SistemaNominaADC.Entidades.DTOs
+@using SistemaNominaADC.Presentacion.Services.Auth
+
+@inject SessionService SessionService
+@inject NavigationManager Navigation
+
+<h3>Mantenimiento de Usuarios</h3>
+
+@if (mostrarFormulario)
+{
+    <FormularioMantenimiento Titulo="@tituloFormulario"
+                             Modelo="usuarioFormulario"
+                             OnValidSubmit="Guardar"
+                             OnCancelar="Cancelar"
+                             OnEliminar="Inactivar"
+                             MostrarEliminar="@(!esNuevo)">
+
+        <EditorTemplate Context="u">
+            <div class="mb-3">
+                <label class="form-label">Usuario</label>
+                <InputText class="form-control" @bind-Value="u.UserName" />
+                <ValidationMessage For="@(() => u.UserName)" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Correo</label>
+                <InputText class="form-control" @bind-Value="u.Email" />
+                <ValidationMessage For="@(() => u.Email)" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Empleado asociado</label>
+                <InputSelect class="form-select" @bind-Value="u.IdEmpleado">
+                    <option value="">-- Sin empleado --</option>
+                    @foreach (var emp in listaEmpleados)
+                    {
+                        <option value="@emp.IdEmpleado">@emp.NombreCompleto</option>
+                    }
+                </InputSelect>
+                <small class="text-muted">Obligatorio si el usuario no tiene un rol de administrador.</small>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Roles</label>
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var rol in listaRoles)
+                    {
+                        <div class="form-check border p-2 rounded shadow-sm bg-white" style="min-width: 180px;">
+                            <input class="form-check-input ms-1" type="checkbox"
+                                   id="rol-@rol.Id"
+                                   checked="@rolesSeleccionados.Contains(rol.Nombre)"
+                                   @onchange="@(e => AlternarRol(rol.Nombre, e.Value))" />
+                            <label class="form-check-label ms-4" for="rol-@rol.Id">
+                                @rol.Nombre
+                            </label>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="form-check">
+                    <InputCheckbox class="form-check-input" id="chkActivo" @bind-Value="u.Activo" />
+                    <label class="form-check-label" for="chkActivo">Activo</label>
+                </div>
+            </div>
+
+            @if (esNuevo)
+            {
+                <div class="mb-3">
+                    <label class="form-label">Contrasena</label>
+                    <InputText class="form-control" type="password" @bind-Value="u.Password" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Confirmar contrasena</label>
+                    <InputText class="form-control" type="password" @bind-Value="u.ConfirmPassword" />
+                </div>
+            }
+            else
+            {
+                <div class="mb-3">
+                    <label class="form-label">Nueva contrasena (opcional)</label>
+                    <InputText class="form-control" type="password" @bind-Value="u.Password" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Confirmar nueva contrasena</label>
+                    <InputText class="form-control" type="password" @bind-Value="u.ConfirmPassword" />
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(errorPassword))
+            {
+                <div class="alert alert-danger">@errorPassword</div>
+            }
+        </EditorTemplate>
+
+    </FormularioMantenimiento>
+}
+else
+{
+    <div class="mb-3">
+        <button class="btn btn-primary" @onclick="Crear">
+            <i class="bi bi-plus-circle"></i> Nuevo Usuario
+        </button>
+    </div>
+
+    <TablaMantenimiento TItem="UsuarioDTO"
+                        Items="listaUsuarios"
+                        OnRowClick="Editar">
+
+        <ColumnsTemplate>
+
+            <RadzenDataGridColumn TItem="UsuarioDTO"
+                                  Property="UserName"
+                                  Title="Usuario" />
+
+            <RadzenDataGridColumn TItem="UsuarioDTO"
+                                  Property="Email"
+                                  Title="Correo" />
+
+            <RadzenDataGridColumn TItem="UsuarioDTO"
+                                  Title="Roles">
+                <Template Context="item">
+                    @string.Join(", ", item.Roles)
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="UsuarioDTO"
+                                  Title="Empleado">
+                <Template Context="item">
+                    @(item.NombreEmpleado ?? "Sin empleado")
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="UsuarioDTO"
+                                  Property="Activo"
+                                  Title="Estado">
+                <Template Context="item">
+                    @(item.Activo ? "Activo" : "Inactivo")
+                </Template>
+            </RadzenDataGridColumn>
+
+        </ColumnsTemplate>
+
+    </TablaMantenimiento>
+}

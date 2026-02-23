@@ -24,6 +24,7 @@
             </div>
 
             <SelectorEstado TEntidad="Departamento" @bind-IdEstadoSeleccionado="depto.IdEstado" />
+            <ValidationMessage For="@(() => depto.IdEstado)" />
         </EditorTemplate>
 
     </FormularioMantenimiento>
@@ -55,7 +56,7 @@ else
             <RadzenDataGridColumn TItem="Departamento"
                                   Title="Estado">
                 <Template Context="item">
-                    @(item.Estado?.Nombre ?? "N/A")
+                    @(item.Estado?.Nombre ?? item.Estado?.Descripcion ?? "N/A")
                 </Template>
             </RadzenDataGridColumn>
 
@@ -63,3 +64,5 @@ else
 
     </TablaMantenimiento>
 }
+
+

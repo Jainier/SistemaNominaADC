@@ -15,9 +15,10 @@ namespace SistemaNominaADC.Entidades
         public int IdObjeto { get; set; }
 
         [Required(ErrorMessage = "El nombre de la entidad es obligatorio")]
+        [StringLength(100, ErrorMessage = "El nombre no debe exceder 100 caracteres.")]
         public string NombreEntidad { get; set; } = null!; 
 
-        [Required(ErrorMessage = "Debe asignar un grupo de estados")]
+        [Range(1, int.MaxValue, ErrorMessage = "Debe asignar un grupo de estados")]
         public int IdGrupoEstado { get; set; }
 
         [ForeignKey("IdGrupoEstado")]

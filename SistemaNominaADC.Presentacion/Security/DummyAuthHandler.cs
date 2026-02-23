@@ -16,15 +16,21 @@ namespace SistemaNominaADC.Presentacion.Security
 
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            // No autentica a nadie: la autenticación real la maneja tu CustomAuthStateProvider.
-            return Task.FromResult(AuthenticateResult.NoResult());
+            // Marca como autenticado a nivel de servidor para evitar challenges del middleware.
+            // La autorización real de la UI se maneja en CustomAuthStateProvider.
+            var claims = new[]
+            {
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, "dummy-user")
+            };
+            var identity = new System.Security.Claims.ClaimsIdentity(claims, "Dummy");
+            var principal = new System.Security.Claims.ClaimsPrincipal(identity);
+            var ticket = new AuthenticationTicket(principal, "Dummy");
+            return Task.FromResult(AuthenticateResult.Success(ticket));
         }
 
         protected override Task HandleChallengeAsync(AuthenticationProperties properties)
         {
-            // En vez de responder 401, redirige al login
-            Response.StatusCode = StatusCodes.Status302Found;
-            Response.Headers.Location = "/login";
+            // No redirigir ni forzar 401 aquí: el enrutado Blazor maneja la UI de login.
             return Task.CompletedTask;
         }
     }

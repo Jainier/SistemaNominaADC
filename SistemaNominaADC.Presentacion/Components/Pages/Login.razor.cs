@@ -27,6 +27,7 @@ namespace SistemaNominaADC.Presentacion.Components.Pages
             await SessionService.SetSessionAsync(
                 resultado.Token,
                 resultado.UserName,
+                resultado.Email,
                 resultado.Roles
             );
 
