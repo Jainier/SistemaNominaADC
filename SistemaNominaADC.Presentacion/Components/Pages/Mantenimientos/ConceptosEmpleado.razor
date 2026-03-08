@@ -1,0 +1,106 @@
+﻿@page "/mantenimientos/conceptos-empleado"
+@attribute [Authorize]
+
+@using SistemaNominaADC.Entidades
+
+<h3>Conceptos por Empleado</h3>
+
+<div class="vista-segmentada mb-3" role="tablist" aria-label="Selector de vista">
+    <button type="button" class="segment-btn @(!mostrarFormulario ? "active" : string.Empty)" @onclick="Cancelar">Listado</button>
+    <button type="button" class="segment-btn @(mostrarFormulario ? "active" : string.Empty)" @onclick="Crear">Nuevo Registro</button>
+</div>
+@if (mostrarFormulario)
+{
+    <FormularioMantenimiento Titulo="@tituloFormulario"
+                             Modelo="actual"
+                             OnValidSubmit="Guardar"
+                             OnCancelar="Cancelar"
+                             OnEliminar="Desactivar"
+                             MostrarEliminar="@(actual.IdEmpleadoConceptoNomina > 0)">
+        <EditorTemplate Context="item">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Empleado</label>
+                    <InputSelect class="form-select" @bind-Value="item.IdEmpleado">
+                        <option value="0">-- Seleccione --</option>
+                        @foreach (var e in empleados)
+                        {
+                            <option value="@e.IdEmpleado">@e.NombreCompleto</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Concepto</label>
+                    <InputSelect class="form-select" @bind-Value="item.IdConceptoNomina">
+                        <option value="0">-- Seleccione --</option>
+                        @foreach (var c in conceptos)
+                        {
+                            <option value="@c.IdConceptoNomina">@c.Nombre</option>
+                        }
+                    </InputSelect>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Monto Fijo</label>
+                    <InputNumber class="form-control" @bind-Value="item.MontoFijo" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Porcentaje (0 a 1)</label>
+                    <InputNumber class="form-control" @bind-Value="item.Porcentaje" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Saldo Pendiente</label>
+                    <InputNumber class="form-control" @bind-Value="item.SaldoPendiente" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Prioridad</label>
+                    <InputNumber class="form-control" @bind-Value="item.Prioridad" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Vigencia Desde</label>
+                    <InputDate class="form-control" @bind-Value="item.VigenciaDesde" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Vigencia Hasta</label>
+                    <InputDate class="form-control" @bind-Value="item.VigenciaHasta" />
+                </div>
+            </div>
+
+            <div class="form-check mb-3">
+                <InputCheckbox class="form-check-input" @bind-Value="item.Activo" />
+                <label class="form-check-label ms-2">Activo</label>
+            </div>
+        </EditorTemplate>
+    </FormularioMantenimiento>
+}
+else
+{
+
+    <TablaMantenimiento TItem="EmpleadoConceptoNomina" Items="lista" OnRowClick="Editar">
+        <ColumnsTemplate>
+            <RadzenDataGridColumn TItem="EmpleadoConceptoNomina" Property="IdEmpleadoConceptoNomina" Title="Id" Width="80px" />
+            <RadzenDataGridColumn TItem="EmpleadoConceptoNomina" Title="Empleado">
+                <Template Context="row">@(row.Empleado?.NombreCompleto ?? "N/A")</Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="EmpleadoConceptoNomina" Title="Concepto">
+                <Template Context="row">@(row.TipoConceptoNomina?.Nombre ?? "N/A")</Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="EmpleadoConceptoNomina" Property="MontoFijo" Title="Monto Fijo" />
+            <RadzenDataGridColumn TItem="EmpleadoConceptoNomina" Property="Porcentaje" Title="Porcentaje" />
+            <RadzenDataGridColumn TItem="EmpleadoConceptoNomina" Property="SaldoPendiente" Title="Saldo" />
+            <RadzenDataGridColumn TItem="EmpleadoConceptoNomina" Property="Prioridad" Title="Prioridad" />
+            <RadzenDataGridColumn TItem="EmpleadoConceptoNomina" Title="Activo">
+                <Template Context="row">@(row.Activo ? "Si" : "No")</Template>
+            </RadzenDataGridColumn>
+        </ColumnsTemplate>
+    </TablaMantenimiento>
+}
+
+
+
+

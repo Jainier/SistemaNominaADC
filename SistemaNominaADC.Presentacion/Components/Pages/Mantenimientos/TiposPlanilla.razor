@@ -1,0 +1,73 @@
+﻿@page "/mantenimientos/tipos-planilla"
+@using SistemaNominaADC.Entidades
+@attribute [Authorize]
+
+<h3>Tipos de Planilla</h3>
+
+<div class="vista-segmentada mb-3" role="tablist" aria-label="Selector de vista">
+    <button type="button" class="segment-btn @(!mostrarFormulario ? "active" : string.Empty)" @onclick="Cancelar">Listado</button>
+    <button type="button" class="segment-btn @(mostrarFormulario ? "active" : string.Empty)" @onclick="Crear">Nuevo Registro</button>
+</div>
+@if (mostrarFormulario)
+{
+    <FormularioMantenimiento Titulo="@tituloFormulario"
+                             Modelo="tipoActual"
+                             OnValidSubmit="Guardar"
+                             OnCancelar="Cancelar"
+                             OnEliminar="Desactivar"
+                             MostrarEliminar="@(tipoActual.IdTipoPlanilla > 0)">
+        <EditorTemplate Context="item">
+            <div class="mb-3">
+                <label class="form-label">Nombre</label>
+                <InputText class="form-control" @bind-Value="item.Nombre" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Descripción</label>
+                <InputText class="form-control" @bind-Value="item.Descripcion" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Modo de Cálculo</label>
+                <InputSelect class="form-select" @bind-Value="item.ModoCalculo">
+                    <option value="Regular">Regular</option>
+                    <option value="Extraordinaria">Extraordinaria</option>
+                </InputSelect>
+            </div>
+            <div class="form-check mb-2">
+                <InputCheckbox class="form-check-input" @bind-Value="item.AportaBaseCcss" />
+                <label class="form-check-label ms-2">Aporta Base CCSS</label>
+            </div>
+            <div class="form-check mb-3">
+                <InputCheckbox class="form-check-input" @bind-Value="item.AportaBaseRentaMensual" />
+                <label class="form-check-label ms-2">Aporta Base Renta Mensual</label>
+            </div>
+            <SelectorEstado TEntidad="TipoPlanilla" @bind-IdEstadoSeleccionado="item.IdEstado" />
+        </EditorTemplate>
+    </FormularioMantenimiento>
+}
+else
+{
+
+    <TablaMantenimiento TItem="TipoPlanilla" Items="listaTipos" OnRowClick="Editar">
+        <ColumnsTemplate>
+            <RadzenDataGridColumn TItem="TipoPlanilla" Property="IdTipoPlanilla" Title="ID" />
+            <RadzenDataGridColumn TItem="TipoPlanilla" Property="Nombre" Title="Nombre" />
+            <RadzenDataGridColumn TItem="TipoPlanilla" Property="Descripcion" Title="Descripción" />
+            <RadzenDataGridColumn TItem="TipoPlanilla" Property="ModoCalculo" Title="Modo" />
+            <RadzenDataGridColumn TItem="TipoPlanilla" Property="AportaBaseCcss" Title="Base CCSS">
+                <Template Context="row">@(row.AportaBaseCcss ? "Si" : "No")</Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="TipoPlanilla" Property="AportaBaseRentaMensual" Title="Base Renta">
+                <Template Context="row">@(row.AportaBaseRentaMensual ? "Si" : "No")</Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="TipoPlanilla" Title="Estado">
+                <Template Context="row">
+                    @(row.Estado?.Nombre ?? row.Estado?.Descripcion ?? "N/A")
+                </Template>
+            </RadzenDataGridColumn>
+        </ColumnsTemplate>
+    </TablaMantenimiento>
+}
+
+
+
+

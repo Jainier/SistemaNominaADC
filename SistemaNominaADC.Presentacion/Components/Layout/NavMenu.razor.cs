@@ -1,49 +1,72 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Routing;
 using SistemaNominaADC.Entidades;
-using SistemaNominaADC.Entidades.DTOs;
+using SistemaNominaADC.Presentacion.Security;
 using SistemaNominaADC.Presentacion.Services.Auth;
 using SistemaNominaADC.Presentacion.Services.Http;
-using Microsoft.AspNetCore.Components.Authorization;
-using SistemaNominaADC.Presentacion.Security;
-using System.Net;
-
 
 namespace SistemaNominaADC.Presentacion.Components.Layout
 {
     public partial class NavMenu : IDisposable
     {
         [Inject] private CustomAuthStateProvider AuthStateProvider { get; set; } = null!;
-
-        [Inject] private IObjetoSistemaCliente ObjetoCliente { get; set; } = null!;
         [Inject] private SessionService SessionService { get; set; } = null!;
+        [Inject] private IObjetoSistemaCliente ObjetoSistemaCliente { get; set; } = null!;
 
         private string? currentUrl;
-        private List<ObjetoSistemaDetalleDTO>? objetosMenu;
+        private List<MenuItem> menuOperaciones = new();
         private List<MenuItem> menuMantenimientos = new();
-        private bool expandSubMenu;
+        private List<MenuItem> menuMantenimientosPlanilla = new();
+        private List<MenuItem> menuConfiguracion = new();
+        private bool expandOperacionesMenu = true;
+        private bool expandMantenimientosMenu;
+        private bool expandMantenimientosPlanillaMenu = true;
+        private bool expandConfiguracionMenu;
         private bool _disposed;
-        private bool _menuCargado;
-        private bool _cargandoMenu;
 
+        private static readonly HashSet<string> MantenimientosPlanilla = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "ModoCalculoConceptoNomina",
+            "TipoConceptoNomina",
+            "TipoPlanilla",
+            "TipoPlanillaConcepto",
+            "TramoRentaSalario",
+            "EmpleadoConceptoNomina"
+        };
 
         protected override async Task OnInitializedAsync()
         {
             currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
             NavigationManager.LocationChanged += OnLocationChanged;
-
             AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
 
             if (!SessionService.IsAuthenticated)
             {
-                objetosMenu = new();
-                _menuCargado = false;
+                menuOperaciones = new();
+                menuMantenimientos = new();
+                menuMantenimientosPlanilla = new();
+                menuConfiguracion = new();
                 return;
             }
+
             await CargarMenuAsync();
         }
 
-        private void ToggleSubMenu() => expandSubMenu = !expandSubMenu;
+        private void ToggleOperacionesMenu()
+        {
+            expandOperacionesMenu = !expandOperacionesMenu;
+        }
+
+        private void ToggleMantenimientosMenu()
+        {
+            expandMantenimientosMenu = !expandMantenimientosMenu;
+        }
+
+        private void ToggleConfiguracionMenu()
+        {
+            expandConfiguracionMenu = !expandConfiguracionMenu;
+        }
 
         private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
         {
@@ -51,7 +74,6 @@ namespace SistemaNominaADC.Presentacion.Components.Layout
                 return;
 
             currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
-
             _ = InvokeAsync(StateHasChanged);
         }
 
@@ -61,31 +83,29 @@ namespace SistemaNominaADC.Presentacion.Components.Layout
             NavigationManager.LocationChanged -= OnLocationChanged;
             AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
         }
+
         private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
         {
             if (!SessionService.IsAuthenticated)
             {
-                objetosMenu = new();
+                menuOperaciones = new();
                 menuMantenimientos = new();
-                expandSubMenu = false;
-                _menuCargado = false;
+                menuMantenimientosPlanilla = new();
+                menuConfiguracion = new();
+                expandOperacionesMenu = false;
+                expandMantenimientosMenu = false;
+                expandMantenimientosPlanillaMenu = false;
+                expandConfiguracionMenu = false;
             }
             else
             {
+                expandOperacionesMenu = true;
                 await CargarMenuAsync();
             }
 
             await InvokeAsync(StateHasChanged);
         }
 
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (_disposed || _menuCargado || _cargandoMenu || !SessionService.IsAuthenticated)
-                return;
-
-            await CargarMenuAsync();
-            await InvokeAsync(StateHasChanged);
-        }
         private async void Logout()
         {
             await SessionService.ClearAsync();
@@ -93,91 +113,59 @@ namespace SistemaNominaADC.Presentacion.Components.Layout
             NavigationManager.NavigateTo("/login");
         }
 
-        private void ConstruirMenuMantenimientos()
-        {
-            var lista = new List<MenuItem>();
-            var objetos = objetosMenu ?? new();
-
-            foreach (var obj in objetos)
-            {
-                var nombre = obj.NombreEntidad;
-                var ruta = BuildRuta(nombre);
-                if (lista.All(i => !string.Equals(i.Nombre, nombre, StringComparison.OrdinalIgnoreCase)))
-                {
-                    lista.Add(new MenuItem(nombre, ruta));
-                }
-            }
-
-            menuMantenimientos = lista;
-        }
-
         private async Task CargarMenuAsync()
         {
-            if (_cargandoMenu)
-                return;
+            menuOperaciones = new();
+            menuMantenimientos = new();
+            menuMantenimientosPlanilla = new();
+            menuConfiguracion = new();
 
-            _cargandoMenu = true;
-            try
-            {
-                await CargarMenuConReintentoAsync();
-            }
-            catch
-            {
-                objetosMenu = new();
-                ConstruirMenuMantenimientos();
-                _menuCargado = true;
-            }
-            finally
-            {
-                _cargandoMenu = false;
-            }
-        }
+            var objetos = await ObjetoSistemaCliente.ListaParaMenu();
+            var visibles = new HashSet<string>(
+                objetos.Select(o => ObjetoSistemaCatalogo.Canonicalize(o.NombreEntidad)),
+                StringComparer.OrdinalIgnoreCase);
 
-        private async Task CargarMenuConReintentoAsync()
-        {
-            const int maxIntentos = 2;
-
-            for (var intento = 1; intento <= maxIntentos; intento++)
+            if (visibles.Count == 0 && RolesSistema.EsAdministrador(SessionService.Roles))
             {
-                try
+                foreach (var def in ObjetoSistemaCatalogo.Items)
                 {
-                    objetosMenu = await ObjetoCliente.ListaParaMenu();
-                    ConstruirMenuMantenimientos();
-                    _menuCargado = true;
-                    return;
+                    visibles.Add(def.NombreEntidad);
                 }
-                catch (TaskCanceledException) when (intento < maxIntentos)
+            }
+
+            var rutasAgregadas = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var def in ObjetoSistemaCatalogo.Items)
+            {
+                if (!visibles.Contains(def.NombreEntidad))
+                    continue;
+
+                if (!rutasAgregadas.Add(def.Ruta))
+                    continue;
+
+                var item = new MenuItem(def.Etiqueta, def.Ruta, def.Icono);
+                if (string.Equals(def.Seccion, "Operaciones", StringComparison.OrdinalIgnoreCase))
                 {
-                    await Task.Delay(200);
+                    menuOperaciones.Add(item);
+                    continue;
                 }
-                catch (HttpRequestException ex) when (
-                    (ex.StatusCode == HttpStatusCode.Unauthorized || ex.StatusCode == HttpStatusCode.Forbidden)
-                    && intento < maxIntentos)
+
+                if (string.Equals(def.Seccion, "Mantenimientos", StringComparison.OrdinalIgnoreCase))
                 {
-                    await Task.Delay(200);
+                    if (MantenimientosPlanilla.Contains(def.NombreEntidad))
+                        menuMantenimientosPlanilla.Add(item);
+                    else
+                        menuMantenimientos.Add(item);
+                    continue;
                 }
-                catch (TaskCanceledException)
+
+                if (string.Equals(def.Seccion, "Configuracion", StringComparison.OrdinalIgnoreCase))
                 {
-                    _menuCargado = false;
-                    objetosMenu ??= new();
-                    ConstruirMenuMantenimientos();
-                    return;
-                }
-                catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized || ex.StatusCode == HttpStatusCode.Forbidden)
-                {
-                    _menuCargado = false;
-                    objetosMenu ??= new();
-                    ConstruirMenuMantenimientos();
-                    return;
+                    menuConfiguracion.Add(item);
                 }
             }
         }
 
-        private static string BuildRuta(string nombreEntidad)
-        {
-            return $"/mantenimientos/{nombreEntidad.ToLower()}s";
-        }
-
-        private record MenuItem(string Nombre, string Ruta);
+        private record MenuItem(string Nombre, string Ruta, string Icono);
     }
 }

@@ -1,0 +1,50 @@
+@if (Visible)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@Title</h5>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @if (Items is null || !Items.Any())
+                    {
+                        <p class="text-muted mb-0">No hay informacion para mostrar.</p>
+                    }
+                    else
+                    {
+                        @foreach (var item in Items)
+                        {
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold mb-1">@item.Etiqueta</label>
+                                <div class="form-control bg-light solicitud-detalle-text">@(string.IsNullOrWhiteSpace(item.Valor) ? "-" : item.Valor)</div>
+                            </div>
+                        }
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="Close">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .solicitud-detalle-text {
+        min-height: 2.5rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+</style>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public string Title { get; set; } = "Detalle de solicitud";
+    [Parameter] public IReadOnlyList<SolicitudDetalleItem> Items { get; set; } = Array.Empty<SolicitudDetalleItem>();
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private Task Close() => OnClose.InvokeAsync();
+}

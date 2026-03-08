@@ -34,9 +34,9 @@ public class AsistenciaCliente : IAsistenciaCliente
             if (idEmpleado.HasValue && idEmpleado.Value > 0)
                 query.Add($"idEmpleado={idEmpleado.Value}");
             if (fechaDesde.HasValue)
-                query.Add($"fechaDesde={Uri.EscapeDataString(fechaDesde.Value.ToString("O", CultureInfo.InvariantCulture))}");
+                query.Add($"fechaDesde={Uri.EscapeDataString(fechaDesde.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))}");
             if (fechaHasta.HasValue)
-                query.Add($"fechaHasta={Uri.EscapeDataString(fechaHasta.Value.ToString("O", CultureInfo.InvariantCulture))}");
+                query.Add($"fechaHasta={Uri.EscapeDataString(fechaHasta.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))}");
 
             var url = "api/Asistencia";
             if (query.Count > 0)

@@ -160,5 +160,6 @@ namespace SistemaNominaADC.Presentacion.Services.Http
                 return new();
             }
         }
+
     }
 }

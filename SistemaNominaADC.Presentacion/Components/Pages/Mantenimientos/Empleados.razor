@@ -2,14 +2,18 @@
 @using SistemaNominaADC.Entidades
 @attribute [Authorize]
 
-<h3>CatÃ¡logo de Empleados</h3>
+<h3>Empleados</h3>
 
+<div class="vista-segmentada mb-3" role="tablist" aria-label="Selector de vista">
+    <button type="button" class="segment-btn @(!mostrarFormulario ? "active" : string.Empty)" @onclick="Cancelar">Listado</button>
+    <button type="button" class="segment-btn @(mostrarFormulario ? "active" : string.Empty)" @onclick="Crear">Nuevo Registro</button>
+</div>
 @if (mostrarFormulario)
 {
     <FormularioMantenimiento Titulo="@tituloFormulario" Modelo="empleadoActual" OnValidSubmit="Guardar" OnCancelar="Cancelar" OnEliminar="Desactivar" MostrarEliminar="@(empleadoActual.IdEmpleado > 0)">
         <EditorTemplate Context="empleado">
             <div class="mb-2">
-                <label>CÃ©dula</label>
+                <label>Cédula</label>
                 <InputText class="form-control" @bind-Value="empleado.Cedula" />
                 <ValidationMessage For="@(() => empleado.Cedula)" />
             </div>
@@ -48,11 +52,10 @@
 }
 else
 {
-    <button class="btn btn-primary mb-3" @onclick="Crear">Nuevo Empleado</button>
     <TablaMantenimiento TItem="Empleado" Items="listaEmpleados" OnRowClick="Editar">
         <ColumnsTemplate>
             <RadzenDataGridColumn TItem="Empleado" Property="IdEmpleado" Title="ID" />
-            <RadzenDataGridColumn TItem="Empleado" Property="Cedula" Title="CÃ©dula" />
+            <RadzenDataGridColumn TItem="Empleado" Property="Cedula" Title="Cédula" />
             <RadzenDataGridColumn TItem="Empleado" Property="NombreCompleto" Title="Nombre" />
             <RadzenDataGridColumn TItem="Empleado" Title="Puesto">
                 <Template Context="item">
@@ -67,5 +70,9 @@ else
         </ColumnsTemplate>
     </TablaMantenimiento>
 }
+
+
+
+
 
 

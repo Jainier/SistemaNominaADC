@@ -1,5 +1,6 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SistemaNominaADC.Api.Security;
 using SistemaNominaADC.Entidades.DTOs;
 using SistemaNominaADC.Negocio.Interfaces;
 
@@ -11,18 +12,33 @@ namespace SistemaNominaADC.Api.Controllers
     public class ObjetosSistemaController : ControllerBase
     {
         private readonly IObjetoSistemaService _objetoService;
-        public ObjetosSistemaController(IObjetoSistemaService objetoService) => _objetoService = objetoService;
+        private readonly IObjetoSistemaAuthorizationService _objetoAuthService;
+
+        public ObjetosSistemaController(
+            IObjetoSistemaService objetoService,
+            IObjetoSistemaAuthorizationService objetoAuthService)
+        {
+            _objetoService = objetoService;
+            _objetoAuthService = objetoAuthService;
+        }
 
         [HttpGet("Lista")]
-        [Authorize(Roles = "Admin,Administrador,ADMINISTRADOR")]
-        public async Task<IActionResult> Lista() => Ok(await _objetoService.Lista());
+        public async Task<IActionResult> Lista()
+        {
+            var acceso = await ValidarAccesoModuloAsync();
+            if (acceso != null) return acceso;
+
+            return Ok(await _objetoService.Lista());
+        }
 
         [HttpPost("Guardar")]
-        [Authorize(Roles = "Admin,Administrador,ADMINISTRADOR")]
         public async Task<IActionResult> Guardar([FromBody] ObjetoSistemaCreateUpdateDTO entidad)
         {
+            var acceso = await ValidarAccesoModuloAsync();
+            if (acceso != null) return acceso;
+
             if (entidad == null)
-                return BadRequest("La información del objeto es obligatoria.");
+                return BadRequest("La informacion del objeto es obligatoria.");
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -31,9 +47,11 @@ namespace SistemaNominaADC.Api.Controllers
         }
 
         [HttpGet("Obtener/{nombre}")]
-        [Authorize(Roles = "Admin,Administrador,ADMINISTRADOR")]
         public async Task<IActionResult> Obtener(string nombre)
         {
+            var acceso = await ValidarAccesoModuloAsync();
+            if (acceso != null) return acceso;
+
             if (string.IsNullOrWhiteSpace(nombre))
                 return BadRequest("El nombre de la entidad es requerido.");
 
@@ -41,11 +59,13 @@ namespace SistemaNominaADC.Api.Controllers
         }
 
         [HttpDelete("Inactivar/{id:int}")]
-        [Authorize(Roles = "Admin,Administrador,ADMINISTRADOR")]
         public async Task<IActionResult> Inactivar(int id)
         {
+            var acceso = await ValidarAccesoModuloAsync();
+            if (acceso != null) return acceso;
+
             if (id <= 0)
-                return BadRequest("El id es inválido.");
+                return BadRequest("El id es invalido.");
 
             await _objetoService.Inactivar(id);
             return NoContent();
@@ -59,6 +79,12 @@ namespace SistemaNominaADC.Api.Controllers
                 .Select(c => c.Value);
 
             return Ok(await _objetoService.ListaParaMenu(roles));
+        }
+
+        private async Task<IActionResult?> ValidarAccesoModuloAsync()
+        {
+            var autorizado = await _objetoAuthService.PuedeAccederModuloAsync(User, "ObjetoSistema");
+            return autorizado ? null : Forbid();
         }
     }
 }

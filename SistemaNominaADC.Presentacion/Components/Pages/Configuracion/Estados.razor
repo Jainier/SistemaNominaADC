@@ -1,0 +1,105 @@
+﻿@page "/configuracion/estados"
+@attribute [Authorize]
+
+<h3>Estados</h3>
+
+<div class="vista-segmentada mb-3" role="tablist" aria-label="Selector de vista">
+    <button type="button" class="segment-btn @(!mostrarFormulario ? "active" : string.Empty)" @onclick="Cancelar">Listado</button>
+    <button type="button" class="segment-btn @(mostrarFormulario ? "active" : string.Empty)" @onclick="Crear">Nuevo Registro</button>
+</div>
+@if (mostrarFormulario)
+{
+    <FormularioMantenimiento Titulo="@tituloFormulario" Modelo="estadoActual"
+                             OnValidSubmit="Guardar" OnCancelar="Cancelar"
+                             OnEliminar="Eliminar" MostrarEliminar="@(estadoActual.IdEstado > 0)">
+        <EditorTemplate Context="est">
+            <div class="mb-3">
+                <label>Código Interno</label>
+                <InputNumber class="form-control" @bind-Value="est.Codigo" />
+                <ValidationMessage For="@(() => est.Codigo)" />
+            </div>
+            <div class="mb-3">
+                <label>Nombre del Estado</label>
+                <InputText class="form-control" @bind-Value="est.Nombre" />
+                <ValidationMessage For="@(() => est.Nombre)" />
+            </div>
+            <div class="mb-3">
+                <label>Descripción</label>
+                <InputTextArea class="form-control" @bind-Value="est.Descripcion" />
+                <ValidationMessage For="@(() => est.Descripcion)" />
+            </div>
+            <div class="form-check mb-3">
+                <input class="form-check-input"
+                       type="checkbox"
+                       id="chkActivo"
+                       checked="@(est.EstadoActivo ?? false)"
+                       @onchange="@(e => { est.EstadoActivo = e.Value is bool b && b; })" />
+                <label class="form-check-label" for="chkActivo">Activo</label>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                @foreach (var grupo in listaGrupos)
+                {
+                    <div class="form-check border p-2 rounded shadow-sm bg-white" style="min-width: 180px;">
+                        <input class="form-check-input ms-1" type="checkbox"
+                               id="grupo-@grupo.IdGrupoEstado"
+                               checked="@gruposSeleccionados.Contains(grupo.IdGrupoEstado)"
+                               @onchange="@(e => AlternarGrupo(grupo.IdGrupoEstado, e.Value))" />
+                        <label class="form-check-label ms-4" for="grupo-@grupo.IdGrupoEstado">
+                            @grupo.Nombre
+                        </label>
+                    </div>
+                }
+            </div>
+
+        </EditorTemplate>
+    </FormularioMantenimiento>
+}
+else
+{
+    @* MODO LISTA *@
+    @if (listaEstados == null)
+    {
+        <div class="alert alert-info">Cargando estados...</div>
+    }
+    else
+    {
+        <TablaMantenimiento TItem="Estado"
+                            Items="listaEstados"
+                            OnRowClick="Editar">
+
+            <ColumnsTemplate>
+
+                <RadzenDataGridColumn TItem="Estado"
+                                      Property="Codigo"
+                                      Title="ID"
+                                      Width="80px" />
+
+                <RadzenDataGridColumn TItem="Estado"
+                                      Property="Nombre"
+                                      Title="Nombre" />
+
+                <RadzenDataGridColumn TItem="Estado"
+                                      Property="Descripcion"
+                                      Title="Descripción" />
+
+                <RadzenDataGridColumn TItem="Estado"
+                                      Property="EstadoActivo"
+                                      Title="Estado">
+                    <Template Context="item">
+                        @((item.EstadoActivo ?? false) ? "Activo" : "Inactivo")
+                    </Template>
+                </RadzenDataGridColumn>
+
+            </ColumnsTemplate>
+
+        </TablaMantenimiento>
+    }
+}
+
+
+
+
+
+
+
+

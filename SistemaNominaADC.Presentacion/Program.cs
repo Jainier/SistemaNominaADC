@@ -7,6 +7,7 @@ using SistemaNominaADC.Presentacion.Components;
 using SistemaNominaADC.Presentacion.Security;
 using SistemaNominaADC.Presentacion.Services.Auth;
 using SistemaNominaADC.Presentacion.Services.Http;
+using SistemaNominaADC.Entidades;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,11 +29,28 @@ builder.Services.AddScoped<IEstadoCliente, EstadoCliente>();
 builder.Services.AddScoped<IDepartamentoCliente, DepartamentoCliente>();
 builder.Services.AddScoped<IPuestoCliente, PuestoCliente>();
 builder.Services.AddScoped<IEmpleadoCliente, EmpleadoCliente>();
+builder.Services.AddScoped<IEmpleadoConceptoNominaCliente, EmpleadoConceptoNominaCliente>();
 builder.Services.AddScoped<ITipoPermisoCliente, TipoPermisoCliente>();
 builder.Services.AddScoped<ITipoIncapacidadCliente, TipoIncapacidadCliente>();
 builder.Services.AddScoped<ITipoHoraExtraCliente, TipoHoraExtraCliente>();
 builder.Services.AddScoped<IAsistenciaCliente, AsistenciaCliente>();
 builder.Services.AddScoped<IUsuarioCliente, UsuarioCliente>();
+builder.Services.AddScoped<IPermisoCliente, PermisoCliente>();
+builder.Services.AddScoped<ISolicitudVacacionesCliente, SolicitudVacacionesCliente>();
+builder.Services.AddScoped<ISolicitudHorasExtraCliente, SolicitudHorasExtraCliente>();
+builder.Services.AddScoped<IIncapacidadCliente, IncapacidadCliente>();
+builder.Services.AddScoped<INotificacionCliente, NotificacionCliente>();
+builder.Services.AddScoped<ISolicitudesCliente, SolicitudesCliente>();
+builder.Services.AddScoped<IDepartamentoJefaturaCliente, DepartamentoJefaturaCliente>();
+builder.Services.AddScoped<IEmpleadoJerarquiaCliente, EmpleadoJerarquiaCliente>();
+builder.Services.AddScoped<IModoCalculoConceptoNominaCliente, ModoCalculoConceptoNominaCliente>();
+builder.Services.AddScoped<ITipoConceptoNominaCliente, TipoConceptoNominaCliente>();
+builder.Services.AddScoped<ITipoPlanillaCliente, TipoPlanillaCliente>();
+builder.Services.AddScoped<ITipoPlanillaConceptoCliente, TipoPlanillaConceptoCliente>();
+builder.Services.AddScoped<IFlujoEstadoCliente, FlujoEstadoCliente>();
+builder.Services.AddScoped<IPlanillaEncabezadoCliente, PlanillaEncabezadoCliente>();
+builder.Services.AddScoped<IMiPlanillaCliente, MiPlanillaCliente>();
+builder.Services.AddScoped<ITramoRentaSalarioCliente, TramoRentaSalarioCliente>();
 builder.Services.AddScoped<ApiErrorState>();
 
 
@@ -49,10 +67,7 @@ builder.Services.AddAuthentication("Dummy")
 builder.Services.AddAuthorizationCore(options =>
 {
     options.AddPolicy("AdminOnly", policy =>
-        policy.RequireAssertion(context =>
-            context.User.IsInRole("Admin")
-            || context.User.IsInRole("Administrador")
-            || context.User.IsInRole("ADMINISTRADOR")));
+        policy.RequireAssertion(context => RolesSistema.EsAdministrador(context.User)));
 });
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 builder.Services.AddScoped<CustomAuthStateProvider>(sp =>

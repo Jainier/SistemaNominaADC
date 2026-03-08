@@ -1,0 +1,51 @@
+﻿@page "/mantenimientos/modos-calculo-concepto-nomina"
+@using SistemaNominaADC.Entidades
+@attribute [Authorize]
+
+<h3>Modos de Cálculo de Nómina</h3>
+
+<div class="vista-segmentada mb-3" role="tablist" aria-label="Selector de vista">
+    <button type="button" class="segment-btn @(!mostrarFormulario ? "active" : string.Empty)" @onclick="Cancelar">Listado</button>
+    <button type="button" class="segment-btn @(mostrarFormulario ? "active" : string.Empty)" @onclick="Crear">Nuevo Registro</button>
+</div>
+@if (mostrarFormulario)
+{
+    <FormularioMantenimiento Titulo="@tituloFormulario"
+                             Modelo="modoActual"
+                             OnValidSubmit="Guardar"
+                             OnCancelar="Cancelar"
+                             OnEliminar="Desactivar"
+                             MostrarEliminar="@(modoActual.IdModoCalculoConceptoNomina > 0)">
+        <EditorTemplate Context="item">
+            <div class="mb-3">
+                <label class="form-label">Nombre</label>
+                <InputText class="form-control" @bind-Value="item.Nombre" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Descripción</label>
+                <InputText class="form-control" @bind-Value="item.Descripcion" />
+            </div>
+            <SelectorEstado TEntidad="ModoCalculoConceptoNomina" @bind-IdEstadoSeleccionado="item.IdEstado" />
+        </EditorTemplate>
+    </FormularioMantenimiento>
+}
+else
+{
+
+    <TablaMantenimiento TItem="ModoCalculoConceptoNomina" Items="listaModos" OnRowClick="Editar">
+        <ColumnsTemplate>
+            <RadzenDataGridColumn TItem="ModoCalculoConceptoNomina" Property="IdModoCalculoConceptoNomina" Title="ID" />
+            <RadzenDataGridColumn TItem="ModoCalculoConceptoNomina" Property="Nombre" Title="Nombre" />
+            <RadzenDataGridColumn TItem="ModoCalculoConceptoNomina" Property="Descripcion" Title="Descripción" />
+            <RadzenDataGridColumn TItem="ModoCalculoConceptoNomina" Title="Estado">
+                <Template Context="row">
+                    @(row.Estado?.Nombre ?? row.Estado?.Descripcion ?? "N/A")
+                </Template>
+            </RadzenDataGridColumn>
+        </ColumnsTemplate>
+    </TablaMantenimiento>
+}
+
+
+
+

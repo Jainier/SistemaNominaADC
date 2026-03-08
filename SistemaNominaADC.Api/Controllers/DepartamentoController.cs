@@ -70,7 +70,7 @@ namespace SistemaNominaADC.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Actualizar(int id, [FromBody] Departamento departamento)
+        public async Task<IActionResult> Actualizar(int id, [FromBody] DepartamentoDTO departamento)
         {
             var acceso = await ValidarAccesoModuloAsync();
             if (acceso != null) return acceso;
@@ -87,7 +87,12 @@ namespace SistemaNominaADC.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var actualizado = await _departamentoService.Actualizar(departamento);
+            var actualizado = await _departamentoService.Actualizar(new Departamento
+            {
+                IdDepartamento = departamento.IdDepartamento,
+                Nombre = departamento.Nombre,
+                IdEstado = departamento.IdEstado
+            });
 
             return actualizado ? NoContent() : NotFound("No se encontró el departamento para actualizar.");
         }

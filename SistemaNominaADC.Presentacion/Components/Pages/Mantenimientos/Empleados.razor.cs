@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using SistemaNominaADC.Entidades;
+using SistemaNominaADC.Presentacion.Helpers;
 using SistemaNominaADC.Presentacion.Services.Http;
 
 namespace SistemaNominaADC.Presentacion.Components.Pages.Mantenimientos;
@@ -8,6 +9,7 @@ public partial class Empleados
 {
     [Inject] private IEmpleadoCliente EmpleadoCliente { get; set; } = null!;
     [Inject] private IPuestoCliente PuestoCliente { get; set; } = null!;
+    [Inject] private IEstadoCliente EstadoCliente { get; set; } = null!;
     private List<Empleado> listaEmpleados = new();
     private List<Puesto> listaPuestos = new();
     private Empleado empleadoActual = new() { FechaIngreso = DateTime.Today };
@@ -20,7 +22,13 @@ public partial class Empleados
     }
 
     private async Task CargarEmpleados() => listaEmpleados = await EmpleadoCliente.Lista();
-    private async Task CargarPuestos() => listaPuestos = await PuestoCliente.Lista();
+    private async Task CargarPuestos()
+    {
+        var idsActivos = EstadoActivoFiltro.ObtenerIdsActivos(await EstadoCliente.Lista());
+        listaPuestos = (await PuestoCliente.Lista())
+            .Where(x => EstadoActivoFiltro.EstaActivo(x.IdEstado, idsActivos))
+            .ToList();
+    }
     private void Crear() { empleadoActual = new Empleado { FechaIngreso = DateTime.Today }; tituloFormulario = "Nuevo Empleado"; mostrarFormulario = true; }
     private void Editar(Empleado item) { empleadoActual = item; tituloFormulario = "Editar Empleado"; mostrarFormulario = true; }
     private async Task Guardar() { if (await EmpleadoCliente.Guardar(empleadoActual)) { mostrarFormulario = false; await CargarEmpleados(); } }

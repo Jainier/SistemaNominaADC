@@ -1,0 +1,95 @@
+﻿@page "/mantenimientos/tramos-renta-salario"
+@page "/configuracion/tramos-renta-salario"
+@using SistemaNominaADC.Entidades
+@attribute [Authorize]
+
+<h3>Tramos de Renta</h3>
+
+<div class="vista-segmentada mb-3" role="tablist" aria-label="Selector de vista">
+    <button type="button" class="segment-btn @(!mostrarFormulario ? "active" : string.Empty)" @onclick="Cancelar">Listado</button>
+    <button type="button" class="segment-btn @(mostrarFormulario ? "active" : string.Empty)" @onclick="Crear">Nuevo Tramo</button>
+</div>
+@if (mostrarFormulario)
+{
+    <FormularioMantenimiento Titulo="@tituloFormulario"
+                             Modelo="tramoActual"
+                             OnValidSubmit="Guardar"
+                             OnCancelar="Cancelar"
+                             OnEliminar="Desactivar"
+                             MostrarEliminar="@(tramoActual.IdTramoRentaSalario > 0)">
+        <EditorTemplate Context="item">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Desde Monto</label>
+                    <InputNumber class="form-control" @bind-Value="item.DesdeMonto" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Hasta Monto</label>
+                    <InputNumber class="form-control" @bind-Value="item.HastaMonto" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Tasa</label>
+                    <InputNumber class="form-control" @bind-Value="item.Tasa" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Vigencia Desde</label>
+                    <InputDate class="form-control" @bind-Value="item.VigenciaDesde" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Vigencia Hasta</label>
+                    <InputDate class="form-control" @bind-Value="item.VigenciaHasta" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Orden</label>
+                    <InputNumber class="form-control" @bind-Value="item.Orden" />
+                </div>
+                <div class="col-md-6 mb-3 d-flex align-items-end">
+                    <div class="form-check">
+                        <InputCheckbox class="form-check-input" @bind-Value="item.Activo" />
+                        <label class="form-check-label ms-2">Activo</label>
+                    </div>
+                </div>
+            </div>
+        </EditorTemplate>
+    </FormularioMantenimiento>
+}
+else
+{
+
+    <TablaMantenimiento TItem="TramoRentaSalario" Items="listaTramos" OnRowClick="Editar">
+        <ColumnsTemplate>
+            <RadzenDataGridColumn TItem="TramoRentaSalario" Property="IdTramoRentaSalario" Title="ID" />
+            <RadzenDataGridColumn TItem="TramoRentaSalario" Property="DesdeMonto" Title="Desde">
+                <Template Context="row">@row.DesdeMonto.ToString("N2")</Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="TramoRentaSalario" Property="HastaMonto" Title="Hasta">
+                <Template Context="row">@(row.HastaMonto.HasValue ? row.HastaMonto.Value.ToString("N2") : "Sin limite")</Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="TramoRentaSalario" Property="Tasa" Title="Tasa">
+                <Template Context="row">@($"{(row.Tasa * 100m):0.####}%")</Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="TramoRentaSalario" Property="VigenciaDesde" Title="Vigencia Desde">
+                <Template Context="row">@row.VigenciaDesde.ToString("dd/MM/yyyy")</Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="TramoRentaSalario" Property="VigenciaHasta" Title="Vigencia Hasta">
+                <Template Context="row">@(row.VigenciaHasta.HasValue ? row.VigenciaHasta.Value.ToString("dd/MM/yyyy") : "Sin limite")</Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="TramoRentaSalario" Property="Orden" Title="Orden" />
+            <RadzenDataGridColumn TItem="TramoRentaSalario" Property="Activo" Title="Activo">
+                <Template Context="row">@(row.Activo ? "Si" : "No")</Template>
+            </RadzenDataGridColumn>
+        </ColumnsTemplate>
+    </TablaMantenimiento>
+}
+
+
+
+
+
+

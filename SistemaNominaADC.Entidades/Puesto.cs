@@ -12,6 +12,7 @@ namespace SistemaNominaADC.Entidades
         public int IdPuesto { get; set; }
         [Required(ErrorMessage = "El nombre es obligatorio.")]
         [StringLength(150, ErrorMessage = "El nombre no debe exceder 150 caracteres.")]
+        [RegularExpression(ValidacionPatrones.NombreGeneral, ErrorMessage = "El nombre solo puede contener letras y separadores válidos.")]
         public string Nombre { get; set; } = string.Empty;
         [Range(0, double.MaxValue, ErrorMessage = "El salario base debe ser mayor o igual a 0.")]
         public decimal SalarioBase { get; set; }

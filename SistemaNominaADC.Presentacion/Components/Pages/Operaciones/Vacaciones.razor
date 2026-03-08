@@ -1,0 +1,166 @@
+﻿@page "/operaciones/vacaciones"
+@attribute [Authorize]
+
+<h3>Vacaciones</h3>
+
+<div class="vista-segmentada mb-3" role="tablist" aria-label="Vista vacaciones">
+    <button type="button" class="segment-btn @(!mostrarRegistro ? "active" : string.Empty)" @onclick="MostrarLista">Historial</button>
+    <button type="button" class="segment-btn @(mostrarRegistro ? "active" : string.Empty)" @onclick="MostrarRegistro">Nueva Solicitud</button>
+</div>
+
+@if (mostrarRegistro)
+{
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">@(idSolicitudEditando.HasValue ? $"Editar Solicitud #{idSolicitudEditando.Value}" : "Nueva Solicitud")</h5>
+            @if (!workflowConfigurado)
+            {
+                <div class="alert alert-warning">
+                    No hay workflow configurado para Vacaciones. Configure Flujos de Estado Transaccionales para habilitar registro y decisiones.
+                </div>
+            }
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Empleado</label>
+                    @if (esAprobador)
+                    {
+                        <select class="form-select" value="@idEmpleadoSeleccionado" @onchange="OnEmpleadoSeleccionadoChangedRaw" disabled="@idSolicitudEditando.HasValue">
+                            <option value="0">-- Seleccione un empleado --</option>
+                            @foreach (var empleado in empleados)
+                            {
+                                <option value="@empleado.IdEmpleado">@empleado.NombreCompleto (@empleado.Cedula)</option>
+                            }
+                        </select>
+                    }
+                    else
+                    {
+                        <input class="form-control" value="@(empleadoActual is null ? string.Empty : $"{empleadoActual.NombreCompleto} ({empleadoActual.Cedula})")" disabled />
+                    }
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Dias Restantes</label>
+                    <input class="form-control" value="@(diasRestantes?.ToString() ?? "-")" disabled />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Desde</label>
+                    <InputDate class="form-control" @bind-Value="fechaInicio" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Hasta</label>
+                    <InputDate class="form-control" @bind-Value="fechaFin" />
+                </div>
+            </div>
+            <div class="row g-3 align-items-end mt-1">
+                <div class="@(idSolicitudEditando.HasValue ? "col-md-6" : "col-md-9")">
+                    <label class="form-label">Comentario de solicitud</label>
+                    <InputText class="form-control" @bind-Value="comentarioSolicitud" />
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-primary w-100" @onclick="CrearSolicitud" disabled="@(procesando || !workflowConfigurado)">
+                        @(idSolicitudEditando.HasValue ? "Guardar Cambios" : "Solicitar Vacaciones")
+                    </button>
+                </div>
+                @if (idSolicitudEditando.HasValue)
+                {
+                    <div class="col-md-3">
+                        <button class="btn btn-light border w-100" @onclick="CancelarEdicion" disabled="@procesando">Cancelar Edicion</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">Filtros</h5>
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Empleado</label>
+                    @if (esAprobador)
+                    {
+                        <InputSelect class="form-select" @bind-Value="filtroIdEmpleado">
+                            <option value="">Todos</option>
+                            @foreach (var empleado in empleados)
+                            {
+                                <option value="@empleado.IdEmpleado">@empleado.NombreCompleto</option>
+                            }
+                        </InputSelect>
+                    }
+                    else
+                    {
+                        <input class="form-control" value="@(empleadoActual?.NombreCompleto ?? string.Empty)" disabled />
+                    }
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Desde</label>
+                    <InputDate class="form-control" @bind-Value="filtroDesde" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Hasta</label>
+                    <InputDate class="form-control" @bind-Value="filtroHasta" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Estado</label>
+                    <InputSelect class="form-select" @bind-Value="filtroIdEstado">
+                        <option value="">Todos</option>
+                        @foreach (var estado in estados)
+                        {
+                            <option value="@estado.IdEstado">@estado.Nombre</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100" @onclick="CargarDatos">Buscar</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <TablaMantenimiento TItem="SolicitudVacaciones"
+                        Items="solicitudes"
+                        OnRowClick="VerDetalle"
+                        ColumnWidth="auto"
+                        CssClass="tabla-autofit">
+        <ColumnsTemplate>
+            <RadzenDataGridColumn TItem="SolicitudVacaciones" Property="IdSolicitudVacaciones" Title="ID" />
+            <RadzenDataGridColumn TItem="SolicitudVacaciones" FilterProperty="Empleado.NombreCompleto" Title="Empleado">
+                <Template Context="item">@(item.Empleado?.NombreCompleto ?? item.IdEmpleado?.ToString() ?? "-")</Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="SolicitudVacaciones" Property="FechaInicio" Title="Desde">
+                <Template Context="item">@(item.FechaInicio?.ToString("yyyy-MM-dd") ?? "-")</Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="SolicitudVacaciones" Property="FechaFin" Title="Hasta">
+                <Template Context="item">@(item.FechaFin?.ToString("yyyy-MM-dd") ?? "-")</Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="SolicitudVacaciones" Property="CantidadDias" Title="Dias" />
+            <RadzenDataGridColumn TItem="SolicitudVacaciones" Property="IdentityUserIdDecision" Title="Gestionado por" />
+            <RadzenDataGridColumn TItem="SolicitudVacaciones" FilterProperty="Estado.Nombre" Title="Estado">
+                <Template Context="item">@(item.Estado?.Nombre ?? "-")</Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="SolicitudVacaciones" Title="Acciones" Width="260px">
+                <Template Context="item">
+                    <div class="acciones-grid">
+                        @foreach (var accion in AccionesWorkflow(item))
+                        {
+                            <button class="btn btn-sm @ClaseBotonAccion(accion)"
+                                    @onclick:stopPropagation="true"
+                                    @onclick="() => EjecutarAccionWorkflow(item, accion)">
+                                @accion
+                            </button>
+                        }
+                    </div>
+                </Template>
+            </RadzenDataGridColumn>
+        </ColumnsTemplate>
+    </TablaMantenimiento>
+}
+
+<SolicitudDetalleModal Visible="@mostrarDetalleSolicitud"
+                      Title="@tituloDetalleSolicitud"
+                      Items="@detalleSolicitudItems"
+                      OnClose="CerrarDetalle" />
+
+

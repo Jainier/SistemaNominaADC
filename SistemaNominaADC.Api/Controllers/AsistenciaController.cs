@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SistemaNominaADC.Datos;
+using SistemaNominaADC.Entidades;
 using SistemaNominaADC.Entidades.DTOs;
 using SistemaNominaADC.Negocio.Excepciones;
 using SistemaNominaADC.Negocio.Interfaces;
@@ -118,8 +119,7 @@ public class AsistenciaController : ControllerBase
         }
     }
 
-    private bool EsAdministrador() =>
-        User.IsInRole("Admin") || User.IsInRole("Administrador") || User.IsInRole("ADMINISTRADOR");
+    private bool EsAdministrador() => RolesSistema.EsAdministrador(User);
 
     private async Task<SistemaNominaADC.Entidades.Empleado> ObtenerEmpleadoActualAsync()
     {
@@ -134,3 +134,6 @@ public class AsistenciaController : ControllerBase
             ?? throw new NotFoundException("No se encontró un empleado asociado al usuario autenticado.");
     }
 }
+
+
+

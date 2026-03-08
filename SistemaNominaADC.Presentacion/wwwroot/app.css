@@ -49,3 +49,67 @@ h1:focus {
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
+
+.tabla-autofit .rz-grid-table,
+.tabla-autofit .rz-datatable-table {
+    table-layout: auto;
+    width: 100%;
+}
+
+.tabla-autofit .rz-cell-data,
+.tabla-autofit .rz-column-title-content {
+    white-space: nowrap;
+}
+
+.tabla-autofit .acciones-grid {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.tabla-autofit .acciones-grid .btn {
+    white-space: nowrap;
+}
+
+.tabla-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+}
+
+.tabla-wrapper .rz-grid-table,
+.tabla-wrapper .rz-datatable-table {
+    min-width: max-content;
+}
+
+.vista-segmentada {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    border: 1px solid #dbe3ea;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #f8fafc 0%, #eef2f6 100%);
+}
+
+.vista-segmentada .segment-btn {
+    border: none;
+    background: transparent;
+    color: #334155;
+    border-radius: 999px;
+    padding: 0.4rem 0.95rem;
+    font-weight: 600;
+    line-height: 1.2;
+    transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.vista-segmentada .segment-btn:hover {
+    background-color: #e2e8f0;
+}
+
+.vista-segmentada .segment-btn.active {
+    background-color: #0d6efd;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(13, 110, 253, 0.25);
+}

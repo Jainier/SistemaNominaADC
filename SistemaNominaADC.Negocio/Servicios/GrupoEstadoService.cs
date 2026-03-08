@@ -25,7 +25,7 @@ namespace SistemaNominaADC.Negocio.Servicios
             return await _context.GrupoEstados.ToListAsync();
         }
 
-        public async Task<bool> Guardar(GrupoEstado entidad)
+        public async Task<bool> Guardar(GrupoEstado entidad, List<int>? idsEstados = null)
         {
             if (entidad == null)
                 throw new BusinessException("La información del grupo es obligatoria.");
@@ -40,22 +40,62 @@ namespace SistemaNominaADC.Negocio.Servicios
                     throw new NotFoundException($"No se encontró el grupo con ID {entidad.IdGrupoEstado}.");
             }
 
-            if (entidad.IdGrupoEstado == 0)
-            {
-                entidad.Activo = true;
-                _context.GrupoEstados.Add(entidad);
-            }
-            else
-            {
-                var actual = await _context.GrupoEstados.FirstOrDefaultAsync(g => g.IdGrupoEstado == entidad.IdGrupoEstado)
-                    ?? throw new NotFoundException($"No se encontró el grupo con ID {entidad.IdGrupoEstado}.");
+            idsEstados ??= new List<int>();
 
-                actual.Nombre = entidad.Nombre;
-                actual.Descripcion = entidad.Descripcion;
-                // El estado Activo se gestiona por desactivación lógica.
+            if (idsEstados.Count > 0)
+            {
+                var idsEstadosValidos = await _context.Estados
+                    .Where(e => idsEstados.Contains(e.IdEstado))
+                    .Select(e => e.IdEstado)
+                    .ToListAsync();
+
+                var idsInvalidos = idsEstados.Except(idsEstadosValidos).ToList();
+                if (idsInvalidos.Count > 0)
+                    throw new NotFoundException($"No se encontraron los estados: {string.Join(", ", idsInvalidos)}.");
             }
 
-            return await _context.SaveChangesAsync() > 0;
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                if (entidad.IdGrupoEstado == 0)
+                {
+                    entidad.Activo = true;
+                    _context.GrupoEstados.Add(entidad);
+                }
+                else
+                {
+                    var actual = await _context.GrupoEstados.FirstOrDefaultAsync(g => g.IdGrupoEstado == entidad.IdGrupoEstado)
+                        ?? throw new NotFoundException($"No se encontró el grupo con ID {entidad.IdGrupoEstado}.");
+
+                    actual.Nombre = entidad.Nombre;
+                    actual.Descripcion = entidad.Descripcion;
+                    // El estado Activo se gestiona por desactivación lógica.
+                }
+
+                await _context.SaveChangesAsync();
+
+                var actuales = _context.GrupoEstadoDetalles
+                    .Where(x => x.IdGrupoEstado == entidad.IdGrupoEstado);
+                _context.GrupoEstadoDetalles.RemoveRange(actuales);
+
+                foreach (var idEstado in idsEstados.Distinct())
+                {
+                    _context.GrupoEstadoDetalles.Add(new GrupoEstadoDetalle
+                    {
+                        IdGrupoEstado = entidad.IdGrupoEstado,
+                        IdEstado = idEstado
+                    });
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task<bool> Eliminar(int id)
@@ -81,6 +121,17 @@ namespace SistemaNominaADC.Negocio.Servicios
                 throw new NotFoundException($"No se encontró el grupo con ID {id}.");
 
             return entidad;
+        }
+
+        public async Task<List<int>> ObtenerIdsEstadosAsociados(int idGrupoEstado)
+        {
+            if (idGrupoEstado <= 0)
+                throw new BusinessException("El id del grupo es inválido.");
+
+            return await _context.GrupoEstadoDetalles
+                .Where(x => x.IdGrupoEstado == idGrupoEstado)
+                .Select(x => x.IdEstado)
+                .ToListAsync();
         }
     }
 }

@@ -1,0 +1,96 @@
+﻿@page "/configuracion/grupos"
+@attribute [Authorize]
+
+@using SistemaNominaADC.Entidades
+
+<h3>Grupos de Estados</h3>
+
+<div class="vista-segmentada mb-3" role="tablist" aria-label="Selector de vista">
+    <button type="button" class="segment-btn @(!mostrarFormulario ? "active" : string.Empty)" @onclick="Cancelar">Listado</button>
+    <button type="button" class="segment-btn @(mostrarFormulario ? "active" : string.Empty)" @onclick="Crear">Nuevo Registro</button>
+</div>
+@if (mostrarFormulario)
+{
+    <FormularioMantenimiento Titulo="@tituloFormulario" Modelo="grupoActual" OnValidSubmit="Guardar" OnCancelar="Cancelar"
+                             OnEliminar="Desactivar" MostrarEliminar="@(grupoActual.IdGrupoEstado > 0)">
+        <EditorTemplate Context="grupo">
+            <div class="mb-3">
+                <label class="form-label">Nombre del Grupo</label>
+                <InputText class="form-control" @bind-Value="grupo.Nombre" placeholder="Ej: ESTANDAR, RRHH, NOMINA" />
+                <ValidationMessage For="@(() => grupo.Nombre)" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Descripción</label>
+                <InputTextArea class="form-control" @bind-Value="grupo.Descripcion" />
+                <ValidationMessage For="@(() => grupo.Descripcion)" />
+            </div>
+            <div class="form-check mb-3">
+                <InputCheckbox class="form-check-input" id="chkGrupoActivo" @bind-Value="grupo.Activo" />
+                <label class="form-check-label" for="chkGrupoActivo">Activo</label>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Estados Asociados</label>
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var estado in listaEstados.OrderBy(x => x.Codigo))
+                    {
+                        <div class="form-check border p-2 rounded shadow-sm bg-white" style="min-width: 220px;">
+                            <input class="form-check-input ms-1" type="checkbox"
+                                   id="estado-@estado.IdEstado"
+                                   checked="@estadosSeleccionados.Contains(estado.IdEstado)"
+                                   @onchange="@(e => AlternarEstado(estado.IdEstado, e.Value))" />
+                            <label class="form-check-label ms-4" for="estado-@estado.IdEstado">
+                                @($"{estado.Codigo} - {estado.Nombre}")
+                            </label>
+                        </div>
+                    }
+                </div>
+            </div>
+        </EditorTemplate>
+    </FormularioMantenimiento>
+}
+else
+{
+
+    @if (listaGrupos == null)
+    {
+        <div class="alert alert-info">Cargando grupos...</div>
+    }
+    else
+    {
+    <TablaMantenimiento TItem="GrupoEstado" Items="listaGrupos" OnRowClick="Editar">
+
+        <ColumnsTemplate>
+
+                <RadzenDataGridColumn TItem="GrupoEstado"
+                                    Property="IdGrupoEstado"
+                                    Title="ID"
+                                    Width="80px" />
+
+                <RadzenDataGridColumn TItem="GrupoEstado"
+                                    Property="Nombre"
+                                    Title="Nombre" />
+
+                <RadzenDataGridColumn TItem="GrupoEstado"
+                                      Property="Descripcion"
+                                    Title="Descripción">
+            </RadzenDataGridColumn>
+
+                <RadzenDataGridColumn TItem="GrupoEstado"
+                                      Property="Activo"
+                                      Title="Estado">
+                    <Template Context="item">
+                        @(item.Activo ? "Activo" : "Inactivo")
+                    </Template>
+                </RadzenDataGridColumn>
+
+        </ColumnsTemplate>
+    </TablaMantenimiento>
+    }
+}
+
+
+
+
+
+
+

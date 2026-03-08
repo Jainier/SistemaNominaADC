@@ -28,12 +28,12 @@ namespace SistemaNominaADC.API.Controllers
         }
 
         [HttpPost("Guardar")]
-        public async Task<IActionResult> Guardar([FromBody] GrupoEstado entidad)
+        public async Task<IActionResult> Guardar([FromBody] GrupoEstadoRequest request)
         {
-            if (entidad == null || string.IsNullOrWhiteSpace(entidad.Nombre)) // Validar campos requeridos
+            if (request?.Entidad == null || string.IsNullOrWhiteSpace(request.Entidad.Nombre)) // Validar campos requeridos
                 return BadRequest("La información del grupo es incompleta.");
 
-            var resultado = await _grupoService.Guardar(entidad);
+            var resultado = await _grupoService.Guardar(request.Entidad, request.IdsEstados);
             return Ok(resultado);
         }
 
@@ -56,5 +56,20 @@ namespace SistemaNominaADC.API.Controllers
             var exito = await _grupoService.Eliminar(id);
             return exito ? NoContent() : NotFound("No se encontró el registro para eliminar.");
         }
+
+        [HttpGet("EstadosAsociados/{id}")]
+        public async Task<IActionResult> ObtenerIdsEstadosAsociados(int id)
+        {
+            if (id <= 0) return BadRequest("ID inválido.");
+
+            var estados = await _grupoService.ObtenerIdsEstadosAsociados(id);
+            return Ok(estados);
+        }
+    }
+
+    public class GrupoEstadoRequest
+    {
+        public GrupoEstado Entidad { get; set; } = null!;
+        public List<int> IdsEstados { get; set; } = new();
     }
 }

@@ -1,0 +1,84 @@
+﻿@page "/configuracion/roles"
+@attribute [Authorize]
+
+@using SistemaNominaADC.Entidades.DTOs
+@using Radzen
+@using SistemaNominaADC.Presentacion.Services.Auth
+
+@inject HttpClient Http
+@inject SessionService SessionService
+@inject NotificationService NotificationService
+@inject DialogService DialogService
+@inject NavigationManager Navigation
+
+<h3>Roles</h3>
+
+<div class="vista-segmentada mb-3" role="tablist" aria-label="Selector de vista">
+    <button type="button" class="segment-btn @(!mostrarFormulario ? "active" : string.Empty)" @onclick="Cancelar">Listado</button>
+    <button type="button" class="segment-btn @(mostrarFormulario ? "active" : string.Empty)" @onclick="Crear">Nuevo Registro</button>
+</div>
+@if (mostrarFormulario)
+{
+    <FormularioMantenimiento Titulo="@tituloFormulario"
+                             Modelo="rolActual"
+                             OnValidSubmit="Guardar"
+                             OnCancelar="Cancelar"
+                             OnEliminar="Inactivar"
+                             MostrarEliminar="@(rolIdActual != null && !esRolSistema)">
+
+        <EditorTemplate Context="rol">
+            <div class="mb-3">
+                <label class="form-label">Nombre del Rol</label>
+                <InputText class="form-control"
+                           @bind-Value="rol.Nombre"
+                           disabled="@esRolSistema" />
+                <ValidationMessage For="@(() => rol.Nombre)" />
+            </div>
+            <div class="form-check mb-3">
+                <InputCheckbox class="form-check-input" id="chkRolActivo" @bind-Value="rolActivo" disabled="@esRolSistema" />
+                <label class="form-check-label" for="chkRolActivo">Activo</label>
+            </div>
+        </EditorTemplate>
+
+    </FormularioMantenimiento>
+}
+else
+{
+
+    <TablaMantenimiento TItem="RolDTO"
+                        Items="listaRoles"
+                        OnRowClick="Editar">
+
+        <ColumnsTemplate>
+
+            <RadzenDataGridColumn TItem="RolDTO"
+                                  Property="Nombre"
+                                  Title="Nombre" />
+
+            <RadzenDataGridColumn TItem="RolDTO"
+                                  Title="Sistema">
+                <Template Context="item">
+                    @(item.EsSistema ? "Sí" : "No")
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="RolDTO"
+                                  Property="Activo"
+                                  Title="Estado">
+                <Template Context="item">
+                    @(item.Activo ? "Activo" : "Inactivo")
+                </Template>
+            </RadzenDataGridColumn>
+
+        </ColumnsTemplate>
+
+    </TablaMantenimiento>
+}
+
+
+
+
+
+
+
+

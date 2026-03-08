@@ -11,20 +11,29 @@ namespace SistemaNominaADC.Presentacion.Components.Shared
         [Inject] private IEstadoCliente EstadoCliente { get; set; } = null!;
         [Parameter] public int IdEstadoSeleccionado { get; set; }
         [Parameter] public EventCallback<int> IdEstadoSeleccionadoChanged { get; set; }
+        [Parameter] public string? NombreEntidad { get; set; }
 
         private List<Estado> estados = new();
 
         protected override async Task OnInitializedAsync()
         {
-            string nombreEntidad = typeof(TEntidad).Name;
+            string nombreEntidad = string.IsNullOrWhiteSpace(NombreEntidad)
+                ? typeof(TEntidad).Name
+                : NombreEntidad.Trim();
+
             estados = await EstadoCliente.ListarEstadosPorEntidad(nombreEntidad) ?? new List<Estado>();
-            if (estados.Count == 0)
-                estados = await EstadoCliente.Lista() ?? new List<Estado>();
 
             var selectedId = IdEstadoSeleccionado;
             estados = estados
-                .Where(e => (e.EstadoActivo ?? false) || (selectedId > 0 && e.IdEstado == selectedId))
+                .Where(e => e.EstadoActivo != false || (selectedId > 0 && e.IdEstado == selectedId))
                 .ToList();
+
+            if (selectedId > 0 && estados.All(e => e.IdEstado != selectedId))
+            {
+                var estadoSeleccionado = await EstadoCliente.Obtener(selectedId);
+                if (estadoSeleccionado is not null)
+                    estados.Add(estadoSeleccionado);
+            }
         }
 
         private async Task OnIdEstadoChanged(ChangeEventArgs e)

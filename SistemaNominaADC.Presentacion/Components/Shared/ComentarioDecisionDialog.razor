@@ -1,0 +1,42 @@
+@inject DialogService DialogService
+
+<div class="p-2">
+    <p class="mb-2">Digite el comentario para <strong>@Accion</strong> esta solicitud.</p>
+
+    <RadzenTextArea @bind-Value="comentario"
+                    Style="width:100%; min-height:120px;"
+                    Placeholder="Escriba el comentario..." />
+
+    @if (!string.IsNullOrWhiteSpace(error))
+    {
+        <div class="text-danger mt-2">@error</div>
+    }
+
+    <div class="d-flex justify-content-end gap-2 mt-3">
+        <RadzenButton Text="Cancelar" ButtonStyle="ButtonStyle.Light" Click="@Cancelar" />
+        <RadzenButton Text="Confirmar" ButtonStyle="ButtonStyle.Primary" Click="@Confirmar" />
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Accion { get; set; } = "aprobar/rechazar";
+
+    private string comentario = string.Empty;
+    private string? error;
+
+    private void Cancelar()
+    {
+        DialogService.Close(null);
+    }
+
+    private void Confirmar()
+    {
+        if (string.IsNullOrWhiteSpace(comentario))
+        {
+            error = "Debe digitar un comentario para continuar.";
+            return;
+        }
+
+        DialogService.Close(comentario.Trim());
+    }
+}

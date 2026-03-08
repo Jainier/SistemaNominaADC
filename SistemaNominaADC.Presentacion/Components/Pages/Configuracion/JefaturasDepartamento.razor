@@ -1,0 +1,81 @@
+﻿@page "/configuracion/jefaturas-departamento"
+@attribute [Authorize]
+
+<h3>Jefaturas por Departamento</h3>
+
+<div class="vista-segmentada mb-3" role="tablist" aria-label="Selector de vista">
+    <button type="button" class="segment-btn @(!mostrarFormulario ? "active" : string.Empty)" @onclick="Cancelar">Listado</button>
+    <button type="button" class="segment-btn @(mostrarFormulario ? "active" : string.Empty)" @onclick="Crear">Nuevo Registro</button>
+</div>
+@if (mostrarFormulario)
+{
+    <FormularioMantenimiento Titulo="@tituloFormulario"
+                             Modelo="jefaturaActual"
+                             OnValidSubmit="Guardar"
+                             OnCancelar="Cancelar"
+                             OnEliminar="Desactivar"
+                             MostrarEliminar="@(jefaturaActual.IdDepartamentoJefatura > 0)">
+        <EditorTemplate Context="item">
+            <div class="mb-3">
+                <label class="form-label">Departamento</label>
+                <InputSelect class="form-select" @bind-Value="item.IdDepartamento">
+                    <option value="0">-- Seleccione --</option>
+                    @foreach (var dep in departamentos)
+                    {
+                        <option value="@dep.IdDepartamento">@dep.Nombre</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Empleado (lÃ­der/sublÃ­der)</label>
+                <InputSelect class="form-select" @bind-Value="item.IdEmpleado">
+                    <option value="0">-- Seleccione --</option>
+                    @foreach (var emp in empleados)
+                    {
+                        <option value="@emp.IdEmpleado">@emp.NombreCompleto (@emp.Cedula)</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Tipo</label>
+                <InputSelect class="form-select" @bind-Value="item.TipoJefatura">
+                    <option value="Lider">LÃ­der</option>
+                    <option value="SubLider">SublÃ­der</option>
+                </InputSelect>
+            </div>
+
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" @bind="item.Activo" />
+                <label class="form-check-label">Activo</label>
+            </div>
+        </EditorTemplate>
+    </FormularioMantenimiento>
+}
+else
+{
+
+    <TablaMantenimiento TItem="DepartamentoJefatura" Items="listaJefaturas" OnRowClick="Editar">
+        <ColumnsTemplate>
+            <RadzenDataGridColumn TItem="DepartamentoJefatura" Property="IdDepartamentoJefatura" Title="ID" />
+            <RadzenDataGridColumn TItem="DepartamentoJefatura" Title="Departamento">
+                <Template Context="item">@(item.Departamento?.Nombre ?? item.IdDepartamento.ToString())</Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="DepartamentoJefatura" Title="Empleado">
+                <Template Context="item">@(item.Empleado?.NombreCompleto ?? item.IdEmpleado.ToString())</Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="DepartamentoJefatura" Property="TipoJefatura" Title="Tipo" />
+            <RadzenDataGridColumn TItem="DepartamentoJefatura" Title="Estado">
+                <Template Context="item">@(item.Activo ? "Activo" : "Inactivo")</Template>
+            </RadzenDataGridColumn>
+        </ColumnsTemplate>
+    </TablaMantenimiento>
+}
+
+
+
+
+
+
+

@@ -226,6 +226,45 @@ namespace SistemaNominaADC.Datos.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("SistemaNominaADC.Entidades.Asistencia", b =>
+                {
+                    b.Property<int>("IdAsistencia")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdAsistencia"));
+
+                    b.Property<bool?>("Ausencia")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("HoraEntrada")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("HoraSalida")
+                        .HasColumnType("datetime");
+
+                    b.Property<int>("IdEmpleado")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdEstado")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Justificacion")
+                        .HasMaxLength(1000)
+                        .HasColumnType("text");
+
+                    b.HasKey("IdAsistencia");
+
+                    b.HasIndex("IdEmpleado");
+
+                    b.HasIndex("IdEstado");
+
+                    b.ToTable("Asistencia", (string)null);
+                });
+
             modelBuilder.Entity("SistemaNominaADC.Entidades.Bitacora", b =>
                 {
                     b.Property<int>("IdBitacora")
@@ -235,21 +274,22 @@ namespace SistemaNominaADC.Datos.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdBitacora"));
 
                     b.Property<string>("Accion")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(150)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(150)");
 
-                    b.Property<string>("Detalle")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<string>("Descripcion")
+                        .HasColumnType("text");
 
-                    b.Property<DateTime>("Fecha")
+                    b.Property<DateTime?>("Fecha")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("IdEmpleado")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                    b.Property<int?>("IdEstado")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IdentityUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("IdBitacora");
 
@@ -270,14 +310,53 @@ namespace SistemaNominaADC.Datos.Migrations
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.HasKey("IdDepartamento");
 
                     b.HasIndex("IdEstado");
 
                     b.ToTable("Departamento", (string)null);
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.DepartamentoJefatura", b =>
+                {
+                    b.Property<int>("IdDepartamentoJefatura")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdDepartamentoJefatura"));
+
+                    b.Property<bool>("Activo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<int>("IdDepartamento")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdEmpleado")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TipoJefatura")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("VigenciaDesde")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("VigenciaHasta")
+                        .HasColumnType("date");
+
+                    b.HasKey("IdDepartamentoJefatura");
+
+                    b.HasIndex("IdDepartamento");
+
+                    b.HasIndex("IdEmpleado");
+
+                    b.ToTable("DepartamentoJefatura", (string)null);
                 });
 
             modelBuilder.Entity("SistemaNominaADC.Entidades.Empleado", b =>
@@ -314,7 +393,7 @@ namespace SistemaNominaADC.Datos.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<decimal>("SalarioBase")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(10,2)");
 
                     b.HasKey("IdEmpleado");
 
@@ -323,6 +402,94 @@ namespace SistemaNominaADC.Datos.Migrations
                     b.HasIndex("IdPuesto");
 
                     b.ToTable("Empleado", (string)null);
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.EmpleadoConceptoNomina", b =>
+                {
+                    b.Property<int>("IdEmpleadoConceptoNomina")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdEmpleadoConceptoNomina"));
+
+                    b.Property<bool>("Activo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<int>("IdConceptoNomina")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdEmpleado")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("MontoFijo")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal?>("Porcentaje")
+                        .HasColumnType("decimal(9,6)");
+
+                    b.Property<int>("Prioridad")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<decimal?>("SaldoPendiente")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTime?>("VigenciaDesde")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("VigenciaHasta")
+                        .HasColumnType("date");
+
+                    b.HasKey("IdEmpleadoConceptoNomina");
+
+                    b.HasIndex("IdConceptoNomina");
+
+                    b.HasIndex("IdEmpleado", "IdConceptoNomina", "VigenciaDesde", "VigenciaHasta")
+                        .IsUnique()
+                        .HasFilter("[Activo] = 1");
+
+                    b.ToTable("EmpleadoConceptoNomina", (string)null);
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.EmpleadoJerarquia", b =>
+                {
+                    b.Property<int>("IdEmpleadoJerarquia")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdEmpleadoJerarquia"));
+
+                    b.Property<bool>("Activo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<int>("IdEmpleado")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdSupervisor")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Observacion")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<DateTime?>("VigenciaDesde")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("VigenciaHasta")
+                        .HasColumnType("date");
+
+                    b.HasKey("IdEmpleadoJerarquia");
+
+                    b.HasIndex("IdEmpleado");
+
+                    b.HasIndex("IdSupervisor");
+
+                    b.ToTable("EmpleadoJerarquia", (string)null);
                 });
 
             modelBuilder.Entity("SistemaNominaADC.Entidades.Estado", b =>
@@ -340,7 +507,7 @@ namespace SistemaNominaADC.Datos.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
-                    b.Property<bool>("EstadoActivo")
+                    b.Property<bool?>("EstadoActivo")
                         .HasColumnType("bit")
                         .HasColumnName("Estado");
 
@@ -355,6 +522,55 @@ namespace SistemaNominaADC.Datos.Migrations
                     b.ToTable("Estado", (string)null);
                 });
 
+            modelBuilder.Entity("SistemaNominaADC.Entidades.FlujoEstado", b =>
+                {
+                    b.Property<int>("IdFlujoEstado")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdFlujoEstado"));
+
+                    b.Property<string>("Accion")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<bool>("Activo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Entidad")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<int>("IdEstadoDestino")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdEstadoOrigen")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RequiereRol")
+                        .HasMaxLength(256)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(256)");
+
+                    b.HasKey("IdFlujoEstado");
+
+                    b.HasIndex("IdEstadoDestino");
+
+                    b.HasIndex("IdEstadoOrigen");
+
+                    b.HasIndex("Entidad", "Accion", "IdEstadoOrigen", "IdEstadoDestino")
+                        .IsUnique()
+                        .HasFilter("[IdEstadoOrigen] IS NOT NULL");
+
+                    b.ToTable("FlujoEstado", (string)null);
+                });
+
             modelBuilder.Entity("SistemaNominaADC.Entidades.GrupoEstado", b =>
                 {
                     b.Property<int>("IdGrupoEstado")
@@ -362,6 +578,11 @@ namespace SistemaNominaADC.Datos.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdGrupoEstado"));
+
+                    b.Property<bool>("Activo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("Descripcion")
                         .HasMaxLength(250)
@@ -395,6 +616,144 @@ namespace SistemaNominaADC.Datos.Migrations
                     b.ToTable("GrupoEstadoDetalle", (string)null);
                 });
 
+            modelBuilder.Entity("SistemaNominaADC.Entidades.Incapacidad", b =>
+                {
+                    b.Property<int>("IdIncapacidad")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdIncapacidad"));
+
+                    b.Property<string>("ComentarioAprobacion")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("ComentarioRevision")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("ComentarioSolicitud")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime?>("FechaFin")
+                        .IsRequired()
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("FechaInicio")
+                        .IsRequired()
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("FechaRegistro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("IdEmpleado")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdEstado")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdTipoIncapacidad")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IdentityUserIdDecision")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal?>("MontoCubierto")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("NombreDocumento")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("RutaDocumento")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("IdIncapacidad");
+
+                    b.HasIndex("IdEmpleado");
+
+                    b.HasIndex("IdEstado");
+
+                    b.HasIndex("IdTipoIncapacidad");
+
+                    b.ToTable("Incapacidad", (string)null);
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.ModoCalculoConceptoNomina", b =>
+                {
+                    b.Property<int>("IdModoCalculoConceptoNomina")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdModoCalculoConceptoNomina"));
+
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(250)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(250)");
+
+                    b.Property<int>("IdEstado")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("IdModoCalculoConceptoNomina");
+
+                    b.HasIndex("IdEstado");
+
+                    b.ToTable("ModoCalculoConceptoNomina", (string)null);
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.Notificacion", b =>
+                {
+                    b.Property<int>("IdNotificacion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdNotificacion"));
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaLectura")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("IdentityUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("Leida")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Mensaje")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("UrlDestino")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.HasKey("IdNotificacion");
+
+                    b.ToTable("Notificacion", (string)null);
+                });
+
             modelBuilder.Entity("SistemaNominaADC.Entidades.ObjetoSistema", b =>
                 {
                     b.Property<int>("IdObjeto")
@@ -415,6 +774,9 @@ namespace SistemaNominaADC.Datos.Migrations
 
                     b.HasIndex("IdGrupoEstado");
 
+                    b.HasIndex("NombreEntidad")
+                        .IsUnique();
+
                     b.ToTable("ObjetoSistema", (string)null);
                 });
 
@@ -430,6 +792,181 @@ namespace SistemaNominaADC.Datos.Migrations
                     b.HasKey("IdObjeto", "RoleName");
 
                     b.ToTable("ObjetoSistemaRol", (string)null);
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.Permiso", b =>
+                {
+                    b.Property<int>("IdPermiso")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdPermiso"));
+
+                    b.Property<string>("ComentarioAprobacion")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime?>("FechaFin")
+                        .IsRequired()
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("FechaInicio")
+                        .IsRequired()
+                        .HasColumnType("date");
+
+                    b.Property<int?>("IdEmpleado")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdEstado")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdTipoPermiso")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IdentityUserIdDecision")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Motivo")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("IdPermiso");
+
+                    b.HasIndex("IdEmpleado");
+
+                    b.HasIndex("IdEstado");
+
+                    b.HasIndex("IdTipoPermiso");
+
+                    b.ToTable("Permiso", (string)null);
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.PlanillaDetalle", b =>
+                {
+                    b.Property<int>("IdPlanillaDetalle")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdPlanillaDetalle"));
+
+                    b.Property<byte[]>("ComprobantePdf")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<DateTime?>("FechaGeneracionComprobantePdf")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("HashComprobantePdf")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("IdEmpleado")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdEstado")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdPlanilla")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NombreComprobantePdf")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<decimal>("SalarioBase")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal>("SalarioBruto")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal>("SalarioNeto")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal>("TotalDeducciones")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal>("TotalIngresos")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.HasKey("IdPlanillaDetalle");
+
+                    b.HasIndex("IdEmpleado");
+
+                    b.HasIndex("IdEstado");
+
+                    b.HasIndex("IdPlanilla");
+
+                    b.ToTable("PlanillaDetalle", (string)null);
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.PlanillaDetalleConcepto", b =>
+                {
+                    b.Property<int>("IdDetalleConcepto")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdDetalleConcepto"));
+
+                    b.Property<int>("IdConceptoNomina")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdEstado")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdPlanillaDetalle")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Monto")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.HasKey("IdDetalleConcepto");
+
+                    b.HasIndex("IdConceptoNomina");
+
+                    b.HasIndex("IdEstado");
+
+                    b.HasIndex("IdPlanillaDetalle");
+
+                    b.ToTable("PlanillaDetalleConcepto", (string)null);
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.PlanillaEncabezado", b =>
+                {
+                    b.Property<int>("IdPlanilla")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdPlanilla"));
+
+                    b.Property<DateTime>("FechaPago")
+                        .HasColumnType("date");
+
+                    b.Property<int>("IdEstado")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdTipoPlanilla")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IdentityUserIdDecision")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("PeriodoAguinaldo")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("PeriodoFin")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime>("PeriodoInicio")
+                        .HasColumnType("date");
+
+                    b.HasKey("IdPlanilla");
+
+                    b.HasIndex("IdEstado");
+
+                    b.HasIndex("IdTipoPlanilla");
+
+                    b.ToTable("PlanillaEncabezado", (string)null);
                 });
 
             modelBuilder.Entity("SistemaNominaADC.Entidades.Puesto", b =>
@@ -448,11 +985,11 @@ namespace SistemaNominaADC.Datos.Migrations
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<decimal>("SalarioBase")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(10,2)");
 
                     b.HasKey("IdPuesto");
 
@@ -463,6 +1000,174 @@ namespace SistemaNominaADC.Datos.Migrations
                     b.ToTable("Puesto", (string)null);
                 });
 
+            modelBuilder.Entity("SistemaNominaADC.Entidades.SolicitudHorasExtra", b =>
+                {
+                    b.Property<int>("IdSolicitudHorasExtra")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdSolicitudHorasExtra"));
+
+                    b.Property<decimal?>("CantidadHoras")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("ComentarioAprobacion")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime?>("Fecha")
+                        .IsRequired()
+                        .HasColumnType("date");
+
+                    b.Property<int?>("IdEmpleado")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdEstado")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdTipoHoraExtra")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IdentityUserIdDecision")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Motivo")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("IdSolicitudHorasExtra");
+
+                    b.HasIndex("IdEmpleado");
+
+                    b.HasIndex("IdEstado");
+
+                    b.HasIndex("IdTipoHoraExtra");
+
+                    b.ToTable("SolicitudHorasExtra", (string)null);
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.SolicitudVacaciones", b =>
+                {
+                    b.Property<int>("IdSolicitudVacaciones")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdSolicitudVacaciones"));
+
+                    b.Property<int?>("CantidadDias")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ComentarioAprobacion")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("ComentarioSolicitud")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime?>("FechaFin")
+                        .IsRequired()
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("FechaInicio")
+                        .IsRequired()
+                        .HasColumnType("date");
+
+                    b.Property<int?>("IdEmpleado")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdEstado")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IdentityUserIdDecision")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("IdSolicitudVacaciones");
+
+                    b.HasIndex("IdEmpleado");
+
+                    b.HasIndex("IdEstado");
+
+                    b.ToTable("SolicitudVacaciones", (string)null);
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.TipoConceptoNomina", b =>
+                {
+                    b.Property<int>("IdConceptoNomina")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdConceptoNomina"));
+
+                    b.Property<bool>("AfectaCcss")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("AfectaRenta")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("CodigoConcepto")
+                        .HasMaxLength(40)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(40)");
+
+                    b.Property<string>("CodigoFormula")
+                        .HasMaxLength(60)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(60)");
+
+                    b.Property<bool>("EsDeduccion")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("EsIngreso")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("FormulaCalculo")
+                        .HasMaxLength(1000)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<int>("IdEstado")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdModoCalculo")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<int>("OrdenCalculo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<decimal?>("ValorFijo")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal?>("ValorPorcentaje")
+                        .HasColumnType("decimal(9,6)");
+
+                    b.HasKey("IdConceptoNomina");
+
+                    b.HasIndex("CodigoConcepto")
+                        .IsUnique()
+                        .HasFilter("[CodigoConcepto] IS NOT NULL");
+
+                    b.HasIndex("IdEstado");
+
+                    b.HasIndex("IdModoCalculo");
+
+                    b.ToTable("TipoConceptoNomina", (string)null);
+                });
+
             modelBuilder.Entity("SistemaNominaADC.Entidades.TipoHoraExtra", b =>
                 {
                     b.Property<int>("IdTipoHoraExtra")
@@ -471,15 +1176,21 @@ namespace SistemaNominaADC.Datos.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdTipoHoraExtra"));
 
-                    b.Property<bool>("Estado")
-                        .HasColumnType("bit");
+                    b.Property<int>("IdEstado")
+                        .HasColumnType("int");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<decimal?>("PorcentajePago")
+                        .IsRequired()
+                        .HasColumnType("decimal(5,4)");
+
                     b.HasKey("IdTipoHoraExtra");
+
+                    b.HasIndex("IdEstado");
 
                     b.ToTable("TipoHoraExtra", (string)null);
                 });
@@ -492,8 +1203,8 @@ namespace SistemaNominaADC.Datos.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdTipoIncapacidad"));
 
-                    b.Property<bool>("Estado")
-                        .HasColumnType("bit");
+                    b.Property<int>("IdEstado")
+                        .HasColumnType("int");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -501,6 +1212,8 @@ namespace SistemaNominaADC.Datos.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("IdTipoIncapacidad");
+
+                    b.HasIndex("IdEstado");
 
                     b.ToTable("TipoIncapacidad", (string)null);
                 });
@@ -513,8 +1226,13 @@ namespace SistemaNominaADC.Datos.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdTipoPermiso"));
 
-                    b.Property<bool>("Estado")
-                        .HasColumnType("bit");
+                    b.Property<bool>("ConGoceSalarial")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<int>("IdEstado")
+                        .HasColumnType("int");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -523,7 +1241,155 @@ namespace SistemaNominaADC.Datos.Migrations
 
                     b.HasKey("IdTipoPermiso");
 
+                    b.HasIndex("IdEstado");
+
                     b.ToTable("TipoPermiso", (string)null);
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.TipoPlanilla", b =>
+                {
+                    b.Property<int>("IdTipoPlanilla")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdTipoPlanilla"));
+
+                    b.Property<bool>("AportaBaseCcss")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("AportaBaseRentaMensual")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<int>("IdEstado")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ModoCalculo")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)")
+                        .HasDefaultValue("Regular");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("IdTipoPlanilla");
+
+                    b.HasIndex("IdEstado");
+
+                    b.ToTable("TipoPlanilla", (string)null);
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.TipoPlanillaConcepto", b =>
+                {
+                    b.Property<int>("IdTipoPlanilla")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdConceptoNomina")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Activo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("Obligatorio")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("PermiteMontoManual")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<int>("Prioridad")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.HasKey("IdTipoPlanilla", "IdConceptoNomina");
+
+                    b.HasIndex("IdConceptoNomina");
+
+                    b.ToTable("TipoPlanillaConcepto", (string)null);
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.TramoRentaSalario", b =>
+                {
+                    b.Property<int>("IdTramoRentaSalario")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdTramoRentaSalario"));
+
+                    b.Property<bool>("Activo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<decimal>("DesdeMonto")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("HastaMonto")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Orden")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<decimal>("Tasa")
+                        .HasColumnType("decimal(9,6)");
+
+                    b.Property<DateTime>("VigenciaDesde")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("VigenciaHasta")
+                        .HasColumnType("date");
+
+                    b.HasKey("IdTramoRentaSalario");
+
+                    b.ToTable("TramoRentaSalario", (string)null);
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.Vacaciones", b =>
+                {
+                    b.Property<int>("IdVacaciones")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdVacaciones"));
+
+                    b.Property<int?>("DiasRestantes")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdEmpleado")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdEstado")
+                        .HasColumnType("int");
+
+                    b.HasKey("IdVacaciones");
+
+                    b.HasIndex("IdEmpleado");
+
+                    b.HasIndex("IdEstado");
+
+                    b.ToTable("Vacaciones", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -577,6 +1443,25 @@ namespace SistemaNominaADC.Datos.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("SistemaNominaADC.Entidades.Asistencia", b =>
+                {
+                    b.HasOne("SistemaNominaADC.Entidades.Empleado", "Empleado")
+                        .WithMany()
+                        .HasForeignKey("IdEmpleado")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemaNominaADC.Entidades.Estado", "Estado")
+                        .WithMany()
+                        .HasForeignKey("IdEstado")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Empleado");
+
+                    b.Navigation("Estado");
+                });
+
             modelBuilder.Entity("SistemaNominaADC.Entidades.Departamento", b =>
                 {
                     b.HasOne("SistemaNominaADC.Entidades.Estado", "Estado")
@@ -586,6 +1471,25 @@ namespace SistemaNominaADC.Datos.Migrations
                         .IsRequired();
 
                     b.Navigation("Estado");
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.DepartamentoJefatura", b =>
+                {
+                    b.HasOne("SistemaNominaADC.Entidades.Departamento", "Departamento")
+                        .WithMany()
+                        .HasForeignKey("IdDepartamento")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemaNominaADC.Entidades.Empleado", "Empleado")
+                        .WithMany()
+                        .HasForeignKey("IdEmpleado")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Departamento");
+
+                    b.Navigation("Empleado");
                 });
 
             modelBuilder.Entity("SistemaNominaADC.Entidades.Empleado", b =>
@@ -607,6 +1511,62 @@ namespace SistemaNominaADC.Datos.Migrations
                     b.Navigation("Puesto");
                 });
 
+            modelBuilder.Entity("SistemaNominaADC.Entidades.EmpleadoConceptoNomina", b =>
+                {
+                    b.HasOne("SistemaNominaADC.Entidades.TipoConceptoNomina", "TipoConceptoNomina")
+                        .WithMany()
+                        .HasForeignKey("IdConceptoNomina")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemaNominaADC.Entidades.Empleado", "Empleado")
+                        .WithMany()
+                        .HasForeignKey("IdEmpleado")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Empleado");
+
+                    b.Navigation("TipoConceptoNomina");
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.EmpleadoJerarquia", b =>
+                {
+                    b.HasOne("SistemaNominaADC.Entidades.Empleado", "Empleado")
+                        .WithMany()
+                        .HasForeignKey("IdEmpleado")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemaNominaADC.Entidades.Empleado", "Supervisor")
+                        .WithMany()
+                        .HasForeignKey("IdSupervisor")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Empleado");
+
+                    b.Navigation("Supervisor");
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.FlujoEstado", b =>
+                {
+                    b.HasOne("SistemaNominaADC.Entidades.Estado", "EstadoDestino")
+                        .WithMany()
+                        .HasForeignKey("IdEstadoDestino")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemaNominaADC.Entidades.Estado", "EstadoOrigen")
+                        .WithMany()
+                        .HasForeignKey("IdEstadoOrigen")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("EstadoDestino");
+
+                    b.Navigation("EstadoOrigen");
+                });
+
             modelBuilder.Entity("SistemaNominaADC.Entidades.GrupoEstadoDetalle", b =>
                 {
                     b.HasOne("SistemaNominaADC.Entidades.Estado", "Estado")
@@ -626,6 +1586,41 @@ namespace SistemaNominaADC.Datos.Migrations
                     b.Navigation("GrupoEstado");
                 });
 
+            modelBuilder.Entity("SistemaNominaADC.Entidades.Incapacidad", b =>
+                {
+                    b.HasOne("SistemaNominaADC.Entidades.Empleado", "Empleado")
+                        .WithMany()
+                        .HasForeignKey("IdEmpleado")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SistemaNominaADC.Entidades.Estado", "Estado")
+                        .WithMany()
+                        .HasForeignKey("IdEstado")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SistemaNominaADC.Entidades.TipoIncapacidad", "TipoIncapacidad")
+                        .WithMany()
+                        .HasForeignKey("IdTipoIncapacidad")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Empleado");
+
+                    b.Navigation("Estado");
+
+                    b.Navigation("TipoIncapacidad");
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.ModoCalculoConceptoNomina", b =>
+                {
+                    b.HasOne("SistemaNominaADC.Entidades.Estado", "Estado")
+                        .WithMany()
+                        .HasForeignKey("IdEstado")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Estado");
+                });
+
             modelBuilder.Entity("SistemaNominaADC.Entidades.ObjetoSistema", b =>
                 {
                     b.HasOne("SistemaNominaADC.Entidades.GrupoEstado", "GrupoEstado")
@@ -642,10 +1637,107 @@ namespace SistemaNominaADC.Datos.Migrations
                     b.HasOne("SistemaNominaADC.Entidades.ObjetoSistema", "ObjetoSistema")
                         .WithMany()
                         .HasForeignKey("IdObjeto")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("ObjetoSistema");
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.Permiso", b =>
+                {
+                    b.HasOne("SistemaNominaADC.Entidades.Empleado", "Empleado")
+                        .WithMany()
+                        .HasForeignKey("IdEmpleado")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SistemaNominaADC.Entidades.Estado", "Estado")
+                        .WithMany()
+                        .HasForeignKey("IdEstado")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SistemaNominaADC.Entidades.TipoPermiso", "TipoPermiso")
+                        .WithMany()
+                        .HasForeignKey("IdTipoPermiso")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Empleado");
+
+                    b.Navigation("Estado");
+
+                    b.Navigation("TipoPermiso");
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.PlanillaDetalle", b =>
+                {
+                    b.HasOne("SistemaNominaADC.Entidades.Empleado", "Empleado")
+                        .WithMany()
+                        .HasForeignKey("IdEmpleado")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemaNominaADC.Entidades.Estado", "Estado")
+                        .WithMany()
+                        .HasForeignKey("IdEstado")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemaNominaADC.Entidades.PlanillaEncabezado", "Planilla")
+                        .WithMany()
+                        .HasForeignKey("IdPlanilla")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Empleado");
+
+                    b.Navigation("Estado");
+
+                    b.Navigation("Planilla");
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.PlanillaDetalleConcepto", b =>
+                {
+                    b.HasOne("SistemaNominaADC.Entidades.TipoConceptoNomina", "TipoConceptoNomina")
+                        .WithMany()
+                        .HasForeignKey("IdConceptoNomina")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemaNominaADC.Entidades.Estado", "Estado")
+                        .WithMany()
+                        .HasForeignKey("IdEstado")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemaNominaADC.Entidades.PlanillaDetalle", "PlanillaDetalle")
+                        .WithMany()
+                        .HasForeignKey("IdPlanillaDetalle")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Estado");
+
+                    b.Navigation("PlanillaDetalle");
+
+                    b.Navigation("TipoConceptoNomina");
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.PlanillaEncabezado", b =>
+                {
+                    b.HasOne("SistemaNominaADC.Entidades.Estado", "Estado")
+                        .WithMany()
+                        .HasForeignKey("IdEstado")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemaNominaADC.Entidades.TipoPlanilla", "TipoPlanilla")
+                        .WithMany()
+                        .HasForeignKey("IdTipoPlanilla")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Estado");
+
+                    b.Navigation("TipoPlanilla");
                 });
 
             modelBuilder.Entity("SistemaNominaADC.Entidades.Puesto", b =>
@@ -663,6 +1755,146 @@ namespace SistemaNominaADC.Datos.Migrations
                         .IsRequired();
 
                     b.Navigation("Departamento");
+
+                    b.Navigation("Estado");
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.SolicitudHorasExtra", b =>
+                {
+                    b.HasOne("SistemaNominaADC.Entidades.Empleado", "Empleado")
+                        .WithMany()
+                        .HasForeignKey("IdEmpleado")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SistemaNominaADC.Entidades.Estado", "Estado")
+                        .WithMany()
+                        .HasForeignKey("IdEstado")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SistemaNominaADC.Entidades.TipoHoraExtra", "TipoHoraExtra")
+                        .WithMany()
+                        .HasForeignKey("IdTipoHoraExtra")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Empleado");
+
+                    b.Navigation("Estado");
+
+                    b.Navigation("TipoHoraExtra");
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.SolicitudVacaciones", b =>
+                {
+                    b.HasOne("SistemaNominaADC.Entidades.Empleado", "Empleado")
+                        .WithMany()
+                        .HasForeignKey("IdEmpleado")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SistemaNominaADC.Entidades.Estado", "Estado")
+                        .WithMany()
+                        .HasForeignKey("IdEstado")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Empleado");
+
+                    b.Navigation("Estado");
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.TipoConceptoNomina", b =>
+                {
+                    b.HasOne("SistemaNominaADC.Entidades.Estado", "Estado")
+                        .WithMany()
+                        .HasForeignKey("IdEstado")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemaNominaADC.Entidades.ModoCalculoConceptoNomina", "ModoCalculo")
+                        .WithMany()
+                        .HasForeignKey("IdModoCalculo")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Estado");
+
+                    b.Navigation("ModoCalculo");
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.TipoHoraExtra", b =>
+                {
+                    b.HasOne("SistemaNominaADC.Entidades.Estado", "Estado")
+                        .WithMany()
+                        .HasForeignKey("IdEstado")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Estado");
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.TipoIncapacidad", b =>
+                {
+                    b.HasOne("SistemaNominaADC.Entidades.Estado", "Estado")
+                        .WithMany()
+                        .HasForeignKey("IdEstado")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Estado");
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.TipoPermiso", b =>
+                {
+                    b.HasOne("SistemaNominaADC.Entidades.Estado", "Estado")
+                        .WithMany()
+                        .HasForeignKey("IdEstado")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Estado");
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.TipoPlanilla", b =>
+                {
+                    b.HasOne("SistemaNominaADC.Entidades.Estado", "Estado")
+                        .WithMany()
+                        .HasForeignKey("IdEstado")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Estado");
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.TipoPlanillaConcepto", b =>
+                {
+                    b.HasOne("SistemaNominaADC.Entidades.TipoConceptoNomina", "TipoConceptoNomina")
+                        .WithMany()
+                        .HasForeignKey("IdConceptoNomina")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemaNominaADC.Entidades.TipoPlanilla", "TipoPlanilla")
+                        .WithMany()
+                        .HasForeignKey("IdTipoPlanilla")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("TipoConceptoNomina");
+
+                    b.Navigation("TipoPlanilla");
+                });
+
+            modelBuilder.Entity("SistemaNominaADC.Entidades.Vacaciones", b =>
+                {
+                    b.HasOne("SistemaNominaADC.Entidades.Empleado", "Empleado")
+                        .WithMany()
+                        .HasForeignKey("IdEmpleado")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SistemaNominaADC.Entidades.Estado", "Estado")
+                        .WithMany()
+                        .HasForeignKey("IdEstado")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Empleado");
 
                     b.Navigation("Estado");
                 });

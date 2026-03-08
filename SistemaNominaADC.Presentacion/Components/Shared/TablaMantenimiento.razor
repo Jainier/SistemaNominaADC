@@ -1,19 +1,27 @@
-﻿@typeparam TItem where TItem : notnull
+@typeparam TItem where TItem : notnull
 
-<RadzenDataGrid TItem="TItem"
-                Data="@Items"
-                AllowFiltering="true"
-                AllowSorting="true"
-                AllowPaging="true"
-                PageSize="10"
-                Responsive="true"
-                RowSelect="@OnRowSelected">
+<div class="tabla-wrapper">
+    <RadzenDataGrid TItem="TItem"
+                    Data="@Items"
+                    AllowFiltering="true"
+                    FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                    FilterMode="FilterMode.Advanced"
+                    LogicalFilterOperator="LogicalFilterOperator.And"
+                    AllowColumnPicking="true"
+                    AllowSorting="true"
+                    AllowPaging="true"
+                    PageSize="10"
+                    Responsive="true"
+                    ColumnWidth="@ColumnWidth"
+                    class="@GridCssClass"
+                    RowSelect="@OnRowSelected">
 
-    <Columns>
-        @ColumnsTemplate
-    </Columns>
+        <Columns>
+            @ColumnsTemplate
+        </Columns>
 
-</RadzenDataGrid>
+    </RadzenDataGrid>
+</div>
 
 @code {
 
@@ -22,6 +30,12 @@
     [Parameter] public RenderFragment? ColumnsTemplate { get; set; }
 
     [Parameter] public EventCallback<TItem> OnRowClick { get; set; }
+    [Parameter] public string? ColumnWidth { get; set; }
+    [Parameter] public string? CssClass { get; set; }
+
+    private string GridCssClass => string.IsNullOrWhiteSpace(CssClass)
+        ? "tabla-autofit"
+        : $"tabla-autofit {CssClass}";
 
     private async Task OnRowSelected(TItem item)
     {

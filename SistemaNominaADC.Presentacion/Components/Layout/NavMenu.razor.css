@@ -16,12 +16,39 @@
 }
 
 .top-row {
-    height: 3.5rem;
+    height: 4rem;
     background-color: rgba(0,0,0,0.4);
 }
 
 .navbar-brand {
     font-size: 1.1rem;
+}
+
+.top-row .container-fluid {
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.sidebar-brand-logo-only {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 220px;
+    max-width: 220px;
+    height: 40px;
+    max-height: 40px;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-logo-tiny {
+    /* display: block; */
+    /* width: 230px; */
+    height: 165px;
+    /* object-fit: cover; */
+    /* object-position: center; */
 }
 
 .bi {
@@ -90,12 +117,20 @@
         background: none;
         border: none;
         border-radius: 4px;
-        height: 3rem;
+        min-height: 3rem;
+        height: auto;
         display: flex;
         align-items: center;
-        line-height: 3rem;
+        line-height: 1.25rem;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
         width: 100%;
     }
+
+.nav-link-label {
+    white-space: normal;
+    word-break: break-word;
+}
 
 .nav-item ::deep a.active {
     background-color: rgba(255,255,255,0.37);

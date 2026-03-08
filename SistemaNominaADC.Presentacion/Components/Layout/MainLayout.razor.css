@@ -157,9 +157,24 @@ main {
     font-size: 0.9rem;
 }
 
+.topbar-dropdown-list {
+    max-height: calc(4 * 5.2rem);
+    overflow-y: auto;
+    padding-right: 0.15rem;
+}
+
 .topbar-item {
     padding: 0.45rem 0.5rem;
     border-radius: 10px;
+}
+
+.topbar-item.is-read {
+    opacity: 0.75;
+}
+
+.topbar-item.is-unread .topbar-item-title {
+    color: #1f3f84;
+    font-weight: 700;
 }
 
 .topbar-item-head {
@@ -171,6 +186,10 @@ main {
 
 .topbar-item:hover {
     background: #f8fbff;
+}
+
+.topbar-item-clickable {
+    cursor: pointer;
 }
 
 .topbar-item + .topbar-item {
@@ -207,6 +226,13 @@ main {
     font-size: 0.9rem;
     color: #0f172a;
     word-break: break-word;
+}
+
+.topbar-item-date {
+    font-size: 0.74rem;
+    color: #7a889f;
+    margin-top: 0.05rem;
+    margin-bottom: 0.25rem;
 }
 
 .topbar-roles-select {

@@ -243,8 +243,7 @@ namespace SistemaNominaADC.Negocio.Servicios
 
         private static bool EsRolAdministrador(string rol)
         {
-            return string.Equals(rol, "Admin", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(rol, "Administrador", StringComparison.OrdinalIgnoreCase);
+            return RolesSistema.EsRolAdministrador(rol);
         }
 
         private async Task SincronizarRolesAsync(ApplicationUser user, List<string> nuevosRoles)

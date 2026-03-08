@@ -3,15 +3,13 @@
 
 @inject NavigationManager NavigationManager
 
-@* @implements IDisposable
-@inject NavigationManager NavigationManager
- *@
-
 @if (SessionService.IsAuthenticated)
 {
     <div class="top-row ps-3 navbar navbar-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="">Sistema Nómina ADC</a>
+            <a class="navbar-brand sidebar-brand-logo-only" href="" title="Sistema Nómina ADC" aria-label="Sistema Nómina ADC">
+                <img src="/images/logos/ADCNewLogo1.png" alt="ADC" class="sidebar-logo-tiny" />
+            </a>
         </div>
     </div>
 
@@ -20,7 +18,6 @@
     <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
         <nav class="flex-column">
 
-            <!-- HOME -->
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                     <span class="bi bi-house-door-fill-nav-menu"></span>
@@ -28,82 +25,117 @@
                 </NavLink>
             </div>
 
-            <!-- MANTENIMIENTOS -->
-            <div class="nav-item px-3">
-                <a class="nav-link" style="cursor:pointer" @onclick="ToggleSubMenu">
-                    <span class="bi bi-list-nested-nav-menu"></span>
-                    <span class="flex-grow-1">Mantenimientos</span>
-                    <i class="bi @(expandSubMenu ? "bi-chevron-down" : "bi-chevron-right")"></i>
-                </a>
-            </div>
-
-            @if (expandSubMenu && menuMantenimientos.Count > 0)
+            @if (menuOperaciones.Count > 0)
             {
-                <div class="ps-3">
-                    @foreach (var objeto in menuMantenimientos)
-                    {
-                        <div class="nav-item px-3">
-                            <NavLink class="nav-link"
-                                     href="@objeto.Ruta">
-                                <span class="bi bi-dot"></span>
-                                @objeto.Nombre
-                            </NavLink>
-                        </div>
-                    }
+                <div class="nav-item px-3">
+                    <a class="nav-link" style="cursor:pointer" @onclick="ToggleOperacionesMenu">
+                        <span class="bi bi-gear-wide-connected"></span>
+                        <span class="flex-grow-1 nav-link-label">Operaciones</span>
+                        <i class="bi @(expandOperacionesMenu ? "bi-chevron-down" : "bi-chevron-right")"></i>
+                    </a>
                 </div>
+
+                @if (expandOperacionesMenu)
+                {
+                    <div class="ps-3">
+                        @foreach (var objeto in menuOperaciones)
+                        {
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="@objeto.Ruta.TrimStart('/')">
+                                    <i class="bi @objeto.Icono"></i>
+                                    <span class="nav-link-label">@objeto.Nombre</span>
+                                </NavLink>
+                            </div>
+                        }
+                    </div>
+                }
             }
 
-            <div class="nav-item px-3 mt-2">
-                <div class="nav-link text-white-50 small"><strong>OPERACIONES</strong></div>
-            </div>
-
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="operaciones/asistencia">
-                    <i class="bi bi-clock-history"></i> Asistencia
-                </NavLink>
-            </div>
-
-            <AuthorizeView Policy="AdminOnly">
-                <div class="nav-item px-3 mt-2">
-                    <div class="nav-link text-white-50 small"><strong>CONFIGURACIÓN</strong></div>
+            @if (menuMantenimientos.Count > 0 || menuMantenimientosPlanilla.Count > 0)
+            {
+                <div class="nav-item px-3">
+                    <a class="nav-link" style="cursor:pointer" @onclick="ToggleMantenimientosMenu">
+                        <span class="bi bi-list-nested-nav-menu"></span>
+                        <span class="flex-grow-1 nav-link-label">Mantenimientos</span>
+                        <i class="bi @(expandMantenimientosMenu ? "bi-chevron-down" : "bi-chevron-right")"></i>
+                    </a>
                 </div>
 
+                @if (expandMantenimientosMenu)
+                {
+                    <div class="ps-3">
+                        @foreach (var objeto in menuMantenimientos)
+                        {
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="@objeto.Ruta.TrimStart('/')">
+                                    <i class="bi @objeto.Icono"></i>
+                                    <span class="nav-link-label">@objeto.Nombre</span>
+                                </NavLink>
+                            </div>
+                        }
+
+                        @if (menuMantenimientosPlanilla.Count > 0)
+                        {
+                            <div class="nav-item px-3 mt-2">
+                                <a class="nav-link" style="cursor:pointer" @onclick="() => expandMantenimientosPlanillaMenu = !expandMantenimientosPlanillaMenu">
+                                    <i class="bi bi-calculator"></i>
+                                    <span class="flex-grow-1 nav-link-label">Planilla</span>
+                                    <i class="bi @(expandMantenimientosPlanillaMenu ? "bi-chevron-down" : "bi-chevron-right")"></i>
+                                </a>
+                            </div>
+
+                            @if (expandMantenimientosPlanillaMenu)
+                            {
+                                <div class="ps-3">
+                                    @foreach (var objeto in menuMantenimientosPlanilla)
+                                    {
+                                        <div class="nav-item px-3">
+                                            <NavLink class="nav-link" href="@objeto.Ruta.TrimStart('/')">
+                                                <i class="bi @objeto.Icono"></i>
+                                                <span class="nav-link-label">@objeto.Nombre</span>
+                                            </NavLink>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        }
+                    </div>
+                }
+            }
+
+            @if (menuConfiguracion.Count > 0)
+            {
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="mantenimientos/estados">
-                        <i class="bi bi-icon bi-gear-wide-connected"></i> Estados
-                    </NavLink>
+                    <a class="nav-link" style="cursor:pointer" @onclick="ToggleConfiguracionMenu">
+                        <i class="bi bi-sliders2"></i>
+                        <span class="flex-grow-1 nav-link-label">Configuración</span>
+                        <i class="bi @(expandConfiguracionMenu ? "bi-chevron-down" : "bi-chevron-right")"></i>
+                    </a>
                 </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="mantenimientos/grupos">
-                        <i class="bi bi-icon bi-collection-fill"></i> Grupos de Estados
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="mantenimientos/objetos">
-                        <i class="bi bi-icon bi-box-seam-fill"></i> Objetos del Sistema
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="mantenimientos/roles">
-                        <i class="bi bi-shield-lock-fill"></i> Roles
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="mantenimientos/usuarios">
-                        <i class="bi bi-person-gear"></i> Usuarios
-                    </NavLink>
-                </div>
-            </AuthorizeView>
+
+                @if (expandConfiguracionMenu)
+                {
+                    <div class="ps-3">
+                        @foreach (var objeto in menuConfiguracion)
+                        {
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="@objeto.Ruta.TrimStart('/')">
+                                    <i class="bi @objeto.Icono"></i>
+                                    <span class="nav-link-label">@objeto.Nombre</span>
+                                </NavLink>
+                            </div>
+                        }
+                    </div>
+                }
+            }
 
             <hr class="text-white-50" />
 
-            <!-- USUARIO -->
             <div class="nav-item px-3 text-white-50 small">
                 Usuario:
                 <strong>@SessionService.UserName</strong>
             </div>
 
-            <!-- LOGOUT -->
             <div class="nav-item px-3 mt-2">
                 <button class="nav-link btn btn-link text-start"
                         @onclick="Logout">
@@ -116,100 +148,3 @@
     </div>
 }
 
-
-
-@* <div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">Sistema Nomina ADC</a>
-    </div>
-</div>
-
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" @onclick="ToggleSubMenu" style="cursor: pointer;">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span>
-                <span class="flex-grow-1">Mantenimientos</span>
-                <i class="bi bi-icon @(expandSubMenu ? "bi-chevron-down" : "bi-chevron-right")"></i>
-            </NavLink>
-        </div>
-
-        @if (expandSubMenu)
-        {
-            <div class="ps-3">
-                @if (objetosMenu != null)
-                {
-                    @foreach (var objeto in objetosMenu)
-                    {
-                        <div class="nav-item px-3">
-                            <NavLink class="nav-link" href="@($"/mantenimientos/{objeto.NombreEntidad.ToLower()}s")">
-                                <span class="bi bi-icon bi-dot" aria-hidden="true"></span> @objeto.NombreEntidad
-                            </NavLink>
-                        </div>
-                    }
-                }
-            </div>
-        }
-
-        <div class="nav-item px-3 mt-2">
-            <div class="nav-link text-white-50 small"><strong>CONFIGURACIÓN</strong></div>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="mantenimientos/estados">
-                <i class="bi bi-icon bi-gear-wide-connected"></i> Estados
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="mantenimientos/grupos">
-                <i class="bi bi-icon bi-collection-fill"></i> Grupos de Estados
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="mantenimientos/objetos">
-                <i class="bi bi-icon bi-box-seam-fill"></i> Objetos del Sistema
-            </NavLink>
-        </div>
-
-        <hr class="text-white-50" />
-
-        <AuthorizeView>
-            <Authorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Manage">
-                        <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <form action="Account/Logout" method="post">
-                        <AntiforgeryToken />
-                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                        <button type="submit" class="nav-link">
-                            <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
-                        </button>
-                    </form>
-                </div>
-            </Authorized>
-            <NotAuthorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Register">
-                        <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Login">
-                        <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
-                    </NavLink>
-                </div>
-            </NotAuthorized>
-        </AuthorizeView>
-    </nav>
-</div> *@

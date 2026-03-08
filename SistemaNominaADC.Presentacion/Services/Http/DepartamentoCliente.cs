@@ -1,4 +1,5 @@
 using SistemaNominaADC.Entidades;
+using SistemaNominaADC.Entidades.DTO;
 using System.Net.Http.Json;
 
 namespace SistemaNominaADC.Presentacion.Services.Http
@@ -71,9 +72,17 @@ namespace SistemaNominaADC.Presentacion.Services.Http
             if (!_apiError.TryValidateModel(depto, "Los datos del departamento son obligatorios.")) return false;
             try
             {
+                var dto = new DepartamentoDTO
+                {
+                    IdDepartamento = depto.IdDepartamento,
+                    Nombre = depto.Nombre?.Trim() ?? string.Empty,
+                    IdEstado = depto.IdEstado,
+                    EstadoNombre = null
+                };
+
                 HttpResponseMessage response = depto.IdDepartamento == 0
-                    ? await _http.PostAsJsonAsync("api/Departamento", depto)
-                    : await _http.PutAsJsonAsync($"api/departamento/{depto.IdDepartamento}", depto);
+                    ? await _http.PostAsJsonAsync("api/Departamento", dto)
+                    : await _http.PutAsJsonAsync($"api/departamento/{depto.IdDepartamento}", dto);
 
                 if (!response.IsSuccessStatusCode)
                 {

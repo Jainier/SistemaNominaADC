@@ -139,28 +139,60 @@ namespace SistemaNominaADC.Negocio.Servicios
             if (roles.Count == 0)
                 return new List<ObjetoSistemaDetalleDTO>();
 
-            var objetos = await _context.ObjetoSistemas.ToListAsync();
-            var rolesObjetos = await _context.ObjetoSistemaRoles.ToListAsync();
+            var esAdministrador = RolesSistema.EsAdministrador(roles);
+
+            var objetos = await _context.ObjetoSistemas
+                .AsNoTracking()
+                .Select(o => new
+                {
+                    o.IdObjeto,
+                    NombreEntidad = EF.Property<string?>(o, nameof(ObjetoSistema.NombreEntidad)),
+                    IdGrupoEstado = EF.Property<int?>(o, nameof(ObjetoSistema.IdGrupoEstado))
+                })
+                .ToListAsync();
+
+            var rolesObjetos = await _context.ObjetoSistemaRoles
+                .AsNoTracking()
+                .Select(r => new
+                {
+                    r.IdObjeto,
+                    RoleName = EF.Property<string?>(r, nameof(ObjetoSistemaRol.RoleName))
+                })
+                .Where(r => !string.IsNullOrWhiteSpace(r.RoleName))
+                .ToListAsync();
 
             var rolesPorObjeto = rolesObjetos
                 .GroupBy(r => r.IdObjeto)
-                .ToDictionary(g => g.Key, g => g.Select(x => x.RoleName).ToList());
+                .ToDictionary(g => g.Key, g => g.Select(x => x.RoleName!).ToList());
 
             var visibles = new List<ObjetoSistemaDetalleDTO>();
 
             foreach (var obj in objetos)
             {
-                if (!rolesPorObjeto.TryGetValue(obj.IdObjeto, out var rolesPermitidos) || rolesPermitidos.Count == 0)
+                if (string.IsNullOrWhiteSpace(obj.NombreEntidad) || !obj.IdGrupoEstado.HasValue)
                     continue;
 
-                if (!rolesPermitidos.Intersect(roles, StringComparer.OrdinalIgnoreCase).Any())
-                    continue;
+                List<string> rolesPermitidos;
+                if (esAdministrador)
+                {
+                    rolesPermitidos = rolesPorObjeto.TryGetValue(obj.IdObjeto, out var rolesObj)
+                        ? rolesObj
+                        : new List<string>();
+                }
+                else
+                {
+                    if (!rolesPorObjeto.TryGetValue(obj.IdObjeto, out rolesPermitidos) || rolesPermitidos.Count == 0)
+                        continue;
+
+                    if (!rolesPermitidos.Intersect(roles, StringComparer.OrdinalIgnoreCase).Any())
+                        continue;
+                }
 
                 visibles.Add(new ObjetoSistemaDetalleDTO
                 {
                     IdObjeto = obj.IdObjeto,
-                    NombreEntidad = obj.NombreEntidad,
-                    IdGrupoEstado = obj.IdGrupoEstado,
+                    NombreEntidad = ObjetoSistemaCatalogo.Canonicalize(obj.NombreEntidad),
+                    IdGrupoEstado = obj.IdGrupoEstado.Value,
                     Roles = rolesPermitidos
                 });
             }

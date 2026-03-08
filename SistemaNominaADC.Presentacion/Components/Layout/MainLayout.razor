@@ -7,6 +7,7 @@
 @inject NavigationManager Navigation
 @inject CustomAuthStateProvider AuthStateProvider
 @inject SistemaNominaADC.Presentacion.Services.Http.ApiErrorState ApiError
+@inject SistemaNominaADC.Presentacion.Services.Http.INotificacionCliente NotificacionCliente
 @* @if (!SessionService.IsAuthenticated)
 {
     
@@ -24,92 +25,94 @@ else
             {
             <div class="top-row px-4" @onclick="CerrarTopbarMenus">
                 <div class="topbar-shell">
-                    <div class="topbar-card topbar-notifications" @onclick:stopPropagation="true">
-                        <button type="button" class="topbar-trigger @(mostrarNotificaciones ? "is-open" : "")" @onclick="ToggleNotificaciones" title="Notificaciones">
-                            <span class="topbar-icon"><i class="bi bi-bell"></i></span>
-                            <span class="topbar-trigger-text">Notificaciones</span>
-                            <span class="topbar-badge">@NotificacionesPendientes</span>
-                            <i class="bi @(mostrarNotificaciones ? "bi-chevron-up" : "bi-chevron-down") topbar-chevron"></i>
-                        </button>
-                        @if (mostrarNotificaciones)
-                        {
-                            <div class="topbar-dropdown">
-                            <div class="topbar-dropdown-header">
-                                <span>Notificaciones</span>
-                                <button type="button"
-                                        class="btn btn-sm btn-link topbar-link-btn"
-                                        @onclick="LimpiarNotificaciones"
-                                        disabled="@(notificaciones.Count == 0)">
-                                    Limpiar todas
-                                </button>
-                            </div>
-                            @if (notificaciones.Count == 0)
+                        <div class="topbar-card topbar-notifications" @onclick:stopPropagation="true">
+                            <button type="button" class="topbar-trigger @(mostrarNotificaciones ? "is-open" : "")" @onclick="ToggleNotificaciones" title="Notificaciones">
+                                <span class="topbar-icon"><i class="bi bi-bell"></i></span>
+                                <span class="topbar-trigger-text">Notificaciones</span>
+                                <span class="topbar-badge">@NotificacionesPendientes</span>
+                                <i class="bi @(mostrarNotificaciones ? "bi-chevron-up" : "bi-chevron-down") topbar-chevron"></i>
+                            </button>
+                            @if (mostrarNotificaciones)
                             {
-                                <div class="topbar-empty">No tienes notificaciones pendientes.</div>
-                            }
-                            else
-                            {
-                                @foreach (var n in notificaciones)
+                                <div class="topbar-dropdown">
+                                <div class="topbar-dropdown-header">
+                                    <span>Notificaciones</span>
+                                    <button type="button"
+                                            class="btn btn-sm btn-link topbar-link-btn"
+                                            @onclick="MarcarTodasLeidas"
+                                            disabled="@(NotificacionesPendientes == 0)">
+                                        Marcar todas leídas
+                                    </button>
+                                </div>
+                                @if (notificaciones.Count == 0)
                                 {
-                                    <div class="topbar-item">
-                                        <div class="topbar-item-head">
-                                            <div class="topbar-item-title">@n.Titulo</div>
-                                            <button type="button" class="topbar-icon-btn" title="Descartar" @onclick="() => QuitarNotificacion(n.Id)">
-                                                <i class="bi bi-x-lg"></i>
-                                            </button>
-                                        </div>
-                                        <div class="topbar-item-desc">@n.Descripcion</div>
-                                    </div>
-                                }
-                            }
-                            </div>
-                        }
-                    </div>
-
-                    <div class="topbar-card topbar-user" @onclick:stopPropagation="true">
-                        <button type="button" class="topbar-trigger topbar-user-trigger @(mostrarUsuario ? "is-open" : "")" @onclick="ToggleUsuario">
-                            <span class="topbar-user-main">
-                                <strong>@(SessionService.UserName ?? "Usuario")</strong>
-                                <small>@(SessionService.Email ?? "sin-correo")</small>
-                            </span>
-                            <i class="bi @(mostrarUsuario ? "bi-chevron-up" : "bi-chevron-down") topbar-chevron"></i>
-                        </button>
-                        @if (mostrarUsuario)
-                        {
-                            <div class="topbar-dropdown topbar-user-dropdown">
-                            <div class="topbar-item">
-                                <div class="topbar-item-title">Usuario</div>
-                                <div class="topbar-item-desc">@(SessionService.UserName ?? "N/D")</div>
-                            </div>
-                            <div class="topbar-item">
-                                <div class="topbar-item-title">Correo</div>
-                                <div class="topbar-item-desc">@(SessionService.Email ?? "N/D")</div>
-                            </div>
-                            <div class="topbar-item">
-                                <div class="topbar-item-title">Rol actual</div>
-                                <div class="topbar-item-desc">@(SessionService.Roles.FirstOrDefault() ?? "Sin rol")</div>
-                            </div>
-                            <div class="topbar-item">
-                                <div class="topbar-item-title">Roles asignados</div>
-                                @if (SessionService.Roles.Count <= 1)
-                                {
-                                    <div class="topbar-item-desc">@(SessionService.Roles.FirstOrDefault() ?? "Sin roles")</div>
+                                    <div class="topbar-empty">No tienes notificaciones.</div>
                                 }
                                 else
                                 {
-                                    <select class="form-select form-select-sm topbar-roles-select">
-                                        @foreach (var rol in SessionService.Roles)
+                                    <div class="topbar-dropdown-list">
+                                        @foreach (var n in notificaciones)
                                         {
-                                            <option>@rol</option>
+                                            <div class="topbar-item topbar-item-clickable @(n.Leida ? "is-read" : "is-unread")" @onclick="() => AbrirNotificacion(n)">
+                                                <div class="topbar-item-head">
+                                                    <div class="topbar-item-title">@n.Titulo</div>
+                                                    <button type="button" class="topbar-icon-btn" title="Descartar" @onclick:stopPropagation="true" @onclick="() => QuitarNotificacion(n.IdNotificacion)">
+                                                        <i class="bi bi-x-lg"></i>
+                                                    </button>
+                                                </div>
+                                                <div class="topbar-item-desc">@n.Mensaje</div>
+                                            </div>
                                         }
-                                    </select>
+                                    </div>
                                 }
-                            </div>
-                            </div>
-                        }
-                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="topbar-card topbar-user" @onclick:stopPropagation="true">
+                            <button type="button" class="topbar-trigger topbar-user-trigger @(mostrarUsuario ? "is-open" : "")" @onclick="ToggleUsuario">
+                                <span class="topbar-user-main">
+                                    <strong>@(SessionService.UserName ?? "Usuario")</strong>
+                                    <small>@(SessionService.Email ?? "sin-correo")</small>
+                                </span>
+                                <i class="bi @(mostrarUsuario ? "bi-chevron-up" : "bi-chevron-down") topbar-chevron"></i>
+                            </button>
+                            @if (mostrarUsuario)
+                            {
+                                <div class="topbar-dropdown topbar-user-dropdown">
+                                <div class="topbar-item">
+                                    <div class="topbar-item-title">Usuario</div>
+                                    <div class="topbar-item-desc">@(SessionService.UserName ?? "N/D")</div>
+                                </div>
+                                <div class="topbar-item">
+                                    <div class="topbar-item-title">Correo</div>
+                                    <div class="topbar-item-desc">@(SessionService.Email ?? "N/D")</div>
+                                </div>
+                                <div class="topbar-item">
+                                    <div class="topbar-item-title">Rol actual</div>
+                                    <div class="topbar-item-desc">@(SessionService.Roles.FirstOrDefault() ?? "Sin rol")</div>
+                                </div>
+                                <div class="topbar-item">
+                                    <div class="topbar-item-title">Roles asignados</div>
+                                    @if (SessionService.Roles.Count <= 1)
+                                    {
+                                        <div class="topbar-item-desc">@(SessionService.Roles.FirstOrDefault() ?? "Sin roles")</div>
+                                    }
+                                    else
+                                    {
+                                        <select class="form-select form-select-sm topbar-roles-select">
+                                            @foreach (var rol in SessionService.Roles)
+                                            {
+                                                <option>@rol</option>
+                                            }
+                                        </select>
+                                    }
+                                </div>
+                                </div>
+                            }
+                        </div>
                 </div>
-            </div>
+                            </div>
             }
 
             <article class="content px-4">
@@ -125,6 +128,9 @@ else
         </main>
     </div>
 
+    <RadzenDialog />
+    <RadzenNotification />
+
     <div id="blazor-error-ui">
         An unhandled error has occurred.
         <a href="" class="reload">Reload</a>
@@ -137,6 +143,22 @@ else
         ApiError.OnChange += HandleErrorChanged;
         Navigation.LocationChanged += OnLocationChanged;
         ActualizarVisibilidadTopbar();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!SessionService.IsAuthenticated)
+        {
+            notificacionesCargadas = false;
+            return;
+        }
+
+        if (notificacionesCargadas)
+            return;
+
+        await CargarNotificacionesAsync();
+        notificacionesCargadas = true;
+        await InvokeAsync(StateHasChanged);
     }
 
     private void HandleErrorChanged()
@@ -152,6 +174,10 @@ else
     {
         mostrarNotificaciones = !mostrarNotificaciones;
         if (mostrarNotificaciones) mostrarUsuario = false;
+        if (mostrarNotificaciones)
+        {
+            _ = CargarNotificacionesAsync();
+        }
     }
 
     private void ToggleUsuario()
@@ -167,17 +193,72 @@ else
         mostrarUsuario = false;
     }
 
-    private void LimpiarNotificaciones()
+    private async Task MarcarTodasLeidas()
     {
-        notificaciones.Clear();
-        mostrarNotificaciones = false;
+        if (await NotificacionCliente.MarcarTodasLeidas())
+        {
+            foreach (var n in notificaciones)
+            {
+                n.Leida = true;
+                n.FechaLectura ??= DateTime.Now;
+            }
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
-    private void QuitarNotificacion(int id)
+    private async Task QuitarNotificacion(int id)
     {
-        var item = notificaciones.FirstOrDefault(x => x.Id == id);
+        var item = notificaciones.FirstOrDefault(x => x.IdNotificacion == id);
         if (item is null) return;
+
+        if (!item.Leida)
+        {
+            await NotificacionCliente.MarcarLeida(id);
+        }
+
         notificaciones.Remove(item);
+        NormalizarNotificacionesEnMemoria();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task AbrirNotificacion(Notificacion n)
+    {
+        if (!n.Leida)
+        {
+            await NotificacionCliente.MarcarLeida(n.IdNotificacion);
+            n.Leida = true;
+            n.FechaLectura ??= DateTime.Now;
+        }
+
+        mostrarNotificaciones = false;
+
+        if (!string.IsNullOrWhiteSpace(n.UrlDestino))
+        {
+            Navigation.NavigateTo(n.UrlDestino);
+        }
+        else
+        {
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task CargarNotificacionesAsync()
+    {
+        var lista = await NotificacionCliente.Mias(soloPendientes: false, max: 200);
+        notificaciones = lista
+            .OrderByDescending(x => x.FechaCreacion)
+            .ToList();
+
+        NormalizarNotificacionesEnMemoria();
+    }
+
+    private void NormalizarNotificacionesEnMemoria()
+    {
+        var desde = DateTime.Now.AddDays(-30);
+        notificaciones = notificaciones
+            .Where(n => n.FechaCreacion >= desde)
+            .OrderByDescending(n => n.FechaCreacion)
+            .ToList();
     }
 
     private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
@@ -193,15 +274,10 @@ else
         OcultarTopbar = ruta == "login";
     }
 
-    private List<NotificacionTopbar> notificaciones = new()
-    {
-        new(1, "Solicitud pendiente", "Tienes solicitudes pendientes de revisión."),
-        new(2, "Recordatorio", "Verifica tus marcas de asistencia del día.")
-    };
+    private List<Notificacion> notificaciones = new();
+    private bool notificacionesCargadas;
 
-    private int NotificacionesPendientes => notificaciones.Count;
-
-    private record NotificacionTopbar(int Id, string Titulo, string Descripcion);
+    private int NotificacionesPendientes => notificaciones.Count(n => !n.Leida);
 
     public void Dispose()
     {

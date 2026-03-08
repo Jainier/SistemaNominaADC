@@ -6,9 +6,10 @@ namespace SistemaNominaADC.Presentacion.Services.Http
     public interface IGrupoEstadoCliente
     {
         Task<List<GrupoEstado>> Lista();
-        Task<bool> Guardar(GrupoEstado entidad);
+        Task<bool> Guardar(GrupoEstado entidad, List<int>? idsEstados = null);
         Task<bool> Eliminar(int id);
         Task<GrupoEstado?> ObtenerPorId(int id);
+        Task<List<int>> ObtenerIdsEstadosAsociados(int idGrupoEstado);
     }
 
     public class GrupoEstadoCliente : IGrupoEstadoCliente
@@ -43,13 +44,18 @@ namespace SistemaNominaADC.Presentacion.Services.Http
             }
         }
 
-        public async Task<bool> Guardar(GrupoEstado entidad)
+        public async Task<bool> Guardar(GrupoEstado entidad, List<int>? idsEstados = null)
         {
             _apiError.Clear();
             if (!_apiError.TryValidateModel(entidad, "Los datos del grupo son obligatorios.")) return false;
             try
             {
-                var response = await _http.PostAsJsonAsync("api/GrupoEstado/Guardar", entidad);
+                var request = new
+                {
+                    Entidad = entidad,
+                    IdsEstados = idsEstados ?? new List<int>()
+                };
+                var response = await _http.PostAsJsonAsync("api/GrupoEstado/Guardar", request);
                 if (!response.IsSuccessStatusCode)
                 {
                     await response.SetApiErrorAsync(_apiError, "No autorizado para guardar grupos de estado.");
@@ -106,6 +112,28 @@ namespace SistemaNominaADC.Presentacion.Services.Http
             {
                 _apiError.SetError($"Error al cargar el grupo: {ex.Message}");
                 return null;
+            }
+        }
+
+        public async Task<List<int>> ObtenerIdsEstadosAsociados(int idGrupoEstado)
+        {
+            _apiError.Clear();
+            if (!_apiError.TryValidatePositiveId(idGrupoEstado, "id del grupo")) return new();
+            try
+            {
+                var response = await _http.GetAsync($"api/GrupoEstado/EstadosAsociados/{idGrupoEstado}");
+                if (!response.IsSuccessStatusCode)
+                {
+                    await response.SetApiErrorAsync(_apiError, "No autorizado para consultar estados asociados.");
+                    return new();
+                }
+
+                return await response.Content.ReadFromJsonAsync<List<int>>() ?? new();
+            }
+            catch (Exception ex)
+            {
+                _apiError.SetError($"Error al cargar estados asociados: {ex.Message}");
+                return new();
             }
         }
     }

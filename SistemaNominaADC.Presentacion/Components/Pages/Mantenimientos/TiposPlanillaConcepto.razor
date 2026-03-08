@@ -1,0 +1,89 @@
+﻿@page "/mantenimientos/tipos-planilla-concepto"
+@attribute [Authorize]
+
+@using SistemaNominaADC.Entidades
+
+<h3>Conceptos por Tipo de Planilla</h3>
+
+<div class="vista-segmentada mb-3" role="tablist" aria-label="Selector de vista">
+    <button type="button" class="segment-btn @(!mostrarFormulario ? "active" : string.Empty)" @onclick="Cancelar">Listado</button>
+    <button type="button" class="segment-btn @(mostrarFormulario ? "active" : string.Empty)" @onclick="Crear">Nuevo Registro</button>
+</div>
+
+@if (mostrarFormulario)
+{
+    <FormularioMantenimiento Titulo="@tituloFormulario"
+                             Modelo="actual"
+                             OnValidSubmit="Guardar"
+                             OnCancelar="Cancelar"
+                             OnEliminar="Desactivar"
+                             MostrarEliminar="@esEdicion">
+        <EditorTemplate Context="item">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Tipo de Planilla</label>
+                    <InputSelect class="form-select" @bind-Value="item.IdTipoPlanilla" disabled="@esEdicion">
+                        <option value="0">-- Seleccione --</option>
+                        @foreach (var tipo in tiposPlanilla)
+                        {
+                            <option value="@tipo.IdTipoPlanilla">@tipo.Nombre</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Concepto de Nómina</label>
+                    <InputSelect class="form-select" @bind-Value="item.IdConceptoNomina" disabled="@esEdicion">
+                        <option value="0">-- Seleccione --</option>
+                        @foreach (var c in conceptosNomina)
+                        {
+                            <option value="@c.IdConceptoNomina">@c.Nombre</option>
+                        }
+                    </InputSelect>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Prioridad</label>
+                    <InputNumber class="form-control" @bind-Value="item.Prioridad" />
+                </div>
+            </div>
+
+            <div class="form-check mb-2">
+                <InputCheckbox class="form-check-input" @bind-Value="item.Activo" />
+                <label class="form-check-label ms-2">Activo</label>
+            </div>
+            <div class="form-check mb-2">
+                <InputCheckbox class="form-check-input" @bind-Value="item.Obligatorio" />
+                <label class="form-check-label ms-2">Obligatorio</label>
+            </div>
+            <div class="form-check mb-3">
+                <InputCheckbox class="form-check-input" @bind-Value="item.PermiteMontoManual" />
+                <label class="form-check-label ms-2">Permite Monto Manual</label>
+            </div>
+        </EditorTemplate>
+    </FormularioMantenimiento>
+}
+else
+{
+    <TablaMantenimiento TItem="TipoPlanillaConcepto" Items="lista" OnRowClick="Editar">
+        <ColumnsTemplate>
+            <RadzenDataGridColumn TItem="TipoPlanillaConcepto" Title="Tipo de Planilla">
+                <Template Context="row">@(row.TipoPlanilla?.Nombre ?? "N/A")</Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="TipoPlanillaConcepto" Title="Concepto">
+                <Template Context="row">@(row.TipoConceptoNomina?.Nombre ?? "N/A")</Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="TipoPlanillaConcepto" Property="Prioridad" Title="Prioridad" />
+            <RadzenDataGridColumn TItem="TipoPlanillaConcepto" Property="Activo" Title="Activo">
+                <Template Context="row">@(row.Activo ? "Si" : "No")</Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="TipoPlanillaConcepto" Property="Obligatorio" Title="Obligatorio">
+                <Template Context="row">@(row.Obligatorio ? "Si" : "No")</Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="TipoPlanillaConcepto" Property="PermiteMontoManual" Title="Monto Manual">
+                <Template Context="row">@(row.PermiteMontoManual ? "Si" : "No")</Template>
+            </RadzenDataGridColumn>
+        </ColumnsTemplate>
+    </TablaMantenimiento>
+}

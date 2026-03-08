@@ -1,0 +1,113 @@
+﻿@page "/configuracion/flujos-estado"
+@attribute [Authorize]
+
+@using SistemaNominaADC.Entidades
+@using SistemaNominaADC.Entidades.DTOs
+
+<h3>Flujos de Estado Transaccionales</h3>
+
+<div class="vista-segmentada mb-3" role="tablist" aria-label="Selector de vista">
+    <button type="button" class="segment-btn @(!mostrarFormulario ? "active" : string.Empty)" @onclick="Cancelar">Listado</button>
+    <button type="button" class="segment-btn @(mostrarFormulario ? "active" : string.Empty)" @onclick="Crear">Nuevo Registro</button>
+</div>
+@if (mostrarFormulario)
+{
+    <FormularioMantenimiento Titulo="@tituloFormulario"
+                             Modelo="flujoActual"
+                             OnValidSubmit="Guardar"
+                             OnCancelar="Cancelar"
+                             OnEliminar="Desactivar"
+                             MostrarEliminar="@(flujoActual.IdFlujoEstado > 0)">
+        <EditorTemplate Context="item">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Entidad</label>
+                    <select class="form-select" value="@item.Entidad" @onchange="OnEntidadChanged">
+                        <option value="">-- Seleccione --</option>
+                        @foreach (var obj in listaObjetos)
+                        {
+                            <option value="@obj.NombreEntidad">@obj.NombreEntidad</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Accion</label>
+                    <InputText class="form-control" @bind-Value="item.Accion" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Estado Origen</label>
+                    <InputSelect class="form-select" @bind-Value="item.IdEstadoOrigen">
+                        <option value="">-- Sin estado origen --</option>
+                        @foreach (var estado in listaEstados)
+                        {
+                            <option value="@estado.IdEstado">@estado.Nombre</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Estado Destino</label>
+                    <InputSelect class="form-select" @bind-Value="item.IdEstadoDestino">
+                        <option value="0">-- Seleccione --</option>
+                        @foreach (var estado in listaEstados)
+                        {
+                            <option value="@estado.IdEstado">@estado.Nombre</option>
+                        }
+                    </InputSelect>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8 mb-3">
+                    <label class="form-label">Rol Requerido (opcional)</label>
+                    <InputSelect class="form-select" @bind-Value="item.RequiereRol">
+                        <option value="">-- Ninguno --</option>
+                        @foreach (var rol in listaRoles)
+                        {
+                            <option value="@rol.Nombre">@rol.Nombre</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="col-md-4 mb-3 d-flex align-items-end">
+                    <div class="form-check">
+                        <InputCheckbox class="form-check-input" id="chkActivoFlujo" @bind-Value="item.Activo" />
+                        <label class="form-check-label" for="chkActivoFlujo">Activo</label>
+                    </div>
+                </div>
+            </div>
+        </EditorTemplate>
+    </FormularioMantenimiento>
+}
+else
+{
+
+    <TablaMantenimiento TItem="FlujoEstado" Items="listaFlujos" OnRowClick="Editar">
+        <ColumnsTemplate>
+            <RadzenDataGridColumn TItem="FlujoEstado" Property="IdFlujoEstado" Title="Id" Width="80px" />
+            <RadzenDataGridColumn TItem="FlujoEstado" Property="Entidad" Title="Entidad" />
+            <RadzenDataGridColumn TItem="FlujoEstado" Property="Accion" Title="Accion" />
+            <RadzenDataGridColumn TItem="FlujoEstado" Title="Estado Origen">
+                <Template Context="row">
+                    @(row.EstadoOrigen?.Nombre ?? "Sin origen")
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="FlujoEstado" Title="Estado Destino">
+                <Template Context="row">
+                    @(row.EstadoDestino?.Nombre ?? "N/A")
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="FlujoEstado" Property="RequiereRol" Title="Rol Requerido" />
+            <RadzenDataGridColumn TItem="FlujoEstado" Title="Activo">
+                <Template Context="row">
+                    @(row.Activo ? "Si" : "No")
+                </Template>
+            </RadzenDataGridColumn>
+        </ColumnsTemplate>
+    </TablaMantenimiento>
+}
+
+
+
+

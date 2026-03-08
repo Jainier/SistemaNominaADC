@@ -2,8 +2,12 @@
 @using SistemaNominaADC.Entidades
 @attribute [Authorize]
 
-<h3>CatÃ¡logo de Puestos</h3>
+<h3>Puestos</h3>
 
+<div class="vista-segmentada mb-3" role="tablist" aria-label="Selector de vista">
+    <button type="button" class="segment-btn @(!mostrarFormulario ? "active" : string.Empty)" @onclick="Cancelar">Listado</button>
+    <button type="button" class="segment-btn @(mostrarFormulario ? "active" : string.Empty)" @onclick="Crear">Nuevo Registro</button>
+</div>
 @if (mostrarFormulario)
 {
     <FormularioMantenimiento Titulo="@tituloFormulario" Modelo="puestoActual" OnValidSubmit="Guardar" OnCancelar="Cancelar" OnEliminar="Desactivar" MostrarEliminar="@(puestoActual.IdPuesto > 0)">
@@ -38,7 +42,6 @@
 }
 else
 {
-    <button class="btn btn-primary mb-3" @onclick="Crear">Nuevo Puesto</button>
     <TablaMantenimiento TItem="Puesto" Items="listaPuestos" OnRowClick="Editar">
         <ColumnsTemplate>
             <RadzenDataGridColumn TItem="Puesto" Property="IdPuesto" Title="ID" />
@@ -57,5 +60,9 @@ else
         </ColumnsTemplate>
     </TablaMantenimiento>
 }
+
+
+
+
 
 

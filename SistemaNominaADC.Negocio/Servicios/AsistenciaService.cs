@@ -48,8 +48,14 @@ public class AsistenciaService : IAsistenciaService
     {
         await ValidarMarca(dto);
 
-        var fechaHora = DateTime.Now;
+        var fechaHora = ObtenerFechaHoraMarca(dto);
         var fecha = fechaHora.Date;
+        await SolicitudesConflictosService.ValidarSinConflictoConIncapacidadAsync(
+            _context,
+            dto.IdEmpleado,
+            fecha,
+            fecha,
+            "La asistencia");
 
         var asistenciaDia = await _context.Asistencias
             .FirstOrDefaultAsync(a => a.IdEmpleado == dto.IdEmpleado && a.Fecha == fecha);
@@ -58,6 +64,9 @@ public class AsistenciaService : IAsistenciaService
         {
             if (asistenciaDia.HoraEntrada.HasValue)
                 throw new BusinessException("Ya existe una marca de entrada para este empleado en la fecha indicada.");
+
+            if (asistenciaDia.HoraSalida.HasValue && fechaHora > asistenciaDia.HoraSalida.Value)
+                throw new BusinessException("La hora de entrada no puede ser mayor que la hora de salida existente.");
 
             asistenciaDia.HoraEntrada = fechaHora;
             asistenciaDia.Ausencia = false;
@@ -76,7 +85,7 @@ public class AsistenciaService : IAsistenciaService
             HoraSalida = null,
             Ausencia = false,
             Justificacion = string.IsNullOrWhiteSpace(dto.Justificacion) ? null : dto.Justificacion.Trim(),
-            IdEstado = await ObtenerIdEstadoActivo()
+            IdEstado = await EstadoSistemaHelper.ObtenerIdEstadoActivoAsync(_context)
         };
 
         _context.Asistencias.Add(nueva);
@@ -89,8 +98,14 @@ public class AsistenciaService : IAsistenciaService
     {
         await ValidarMarca(dto);
 
-        var fechaHora = DateTime.Now;
+        var fechaHora = ObtenerFechaHoraMarca(dto);
         var fecha = fechaHora.Date;
+        await SolicitudesConflictosService.ValidarSinConflictoConIncapacidadAsync(
+            _context,
+            dto.IdEmpleado,
+            fecha,
+            fecha,
+            "La asistencia");
 
         var asistenciaDia = await _context.Asistencias
             .FirstOrDefaultAsync(a => a.IdEmpleado == dto.IdEmpleado && a.Fecha == fecha);
@@ -128,19 +143,15 @@ public class AsistenciaService : IAsistenciaService
             throw new NotFoundException("Empleado no encontrado.");
     }
 
-    private async Task<int> ObtenerIdEstadoActivo()
+    private static DateTime ObtenerFechaHoraMarca(AsistenciaMarcaDTO dto)
     {
-        var estado = await _context.Estados
-            .Where(e => e.EstadoActivo == true || e.Nombre == "Activo")
-            .OrderByDescending(e => e.Nombre == "Activo")
-            .FirstOrDefaultAsync();
+        var fechaHora = dto.FechaHoraMarca ?? DateTime.Now;
 
-        if (estado is null)
-            throw new BusinessException("No se encontró un estado activo para registrar asistencia.");
+        if (fechaHora.Year < 2000)
+            throw new BusinessException("La fecha/hora de marca es inválida.");
 
-        return estado.IdEstado;
+        return fechaHora;
     }
-
     private async Task<Asistencia> ObtenerConRelaciones(int id)
     {
         return await _context.Asistencias

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SistemaNominaADC.Api;
 using SistemaNominaADC.Api.Security;
+using SistemaNominaADC.Api.Reports;
 using SistemaNominaADC.Datos;
 using SistemaNominaADC.Entidades;
 using SistemaNominaADC.Negocio.Interfaces;
@@ -73,16 +74,38 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddScoped<IEstadoService, EstadoService>();
 builder.Services.AddScoped<IObjetoSistemaService, ObjetoSistemaService>();
 builder.Services.AddScoped<IObjetoSistemaAuthorizationService, ObjetoSistemaAuthorizationService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ISolicitudesAuthorizationService, SolicitudesAuthorizationService>();
 builder.Services.AddScoped<IGrupoEstadoService, GrupoEstadoService>();
 builder.Services.AddScoped<IDepartamentoService, DepartamentoService>();
 builder.Services.AddScoped<IRolService, RolService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IPuestoService, PuestoService>();
 builder.Services.AddScoped<IEmpleadoService, EmpleadoService>();
+builder.Services.AddScoped<IEmpleadoConceptoNominaService, EmpleadoConceptoNominaService>();
 builder.Services.AddScoped<ITipoPermisoService, TipoPermisoService>();
 builder.Services.AddScoped<ITipoIncapacidadService, TipoIncapacidadService>();
 builder.Services.AddScoped<ITipoHoraExtraService, TipoHoraExtraService>();
 builder.Services.AddScoped<IAsistenciaService, AsistenciaService>();
+builder.Services.AddScoped<IPermisoService, PermisoService>();
+builder.Services.AddScoped<ISolicitudVacacionesService, SolicitudVacacionesService>();
+builder.Services.AddScoped<ISolicitudHorasExtraService, SolicitudHorasExtraService>();
+builder.Services.AddScoped<IIncapacidadService, IncapacidadService>();
+builder.Services.AddScoped<INotificacionService, NotificacionService>();
+builder.Services.AddScoped<IDepartamentoJefaturaService, DepartamentoJefaturaService>();
+builder.Services.AddScoped<IEmpleadoJerarquiaService, EmpleadoJerarquiaService>();
+builder.Services.AddScoped<IModoCalculoConceptoNominaService, ModoCalculoConceptoNominaService>();
+builder.Services.AddScoped<ITipoConceptoNominaService, TipoConceptoNominaService>();
+builder.Services.AddScoped<ITipoPlanillaService, TipoPlanillaService>();
+builder.Services.AddScoped<ITipoPlanillaConceptoService, TipoPlanillaConceptoService>();
+builder.Services.AddScoped<IFlujoEstadoService, FlujoEstadoService>();
+builder.Services.AddScoped<IFlujoEstadoMantenimientoService, FlujoEstadoMantenimientoService>();
+builder.Services.AddScoped<IPlanillaEncabezadoService, PlanillaEncabezadoService>();
+builder.Services.AddScoped<INominaCalculator, NominaCalculator>();
+builder.Services.AddScoped<IComprobantePlanillaService, ComprobantePlanillaService>();
+builder.Services.AddScoped<INominaService, NominaService>();
+builder.Services.AddScoped<IMiPlanillaService, MiPlanillaService>();
+builder.Services.AddScoped<ITramoRentaSalarioService, TramoRentaSalarioService>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -109,6 +132,8 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+await SeedObjetosSistemaAsync(app.Services);
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -133,3 +158,61 @@ app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 app.Run();
+
+static async Task SeedObjetosSistemaAsync(IServiceProvider services)
+{
+    try
+    {
+        using var scope = services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        var idGrupo = await context.GrupoEstados
+            .AsNoTracking()
+            .Where(g => g.Activo)
+            .OrderBy(g => g.IdGrupoEstado)
+            .Select(g => g.IdGrupoEstado)
+            .FirstOrDefaultAsync();
+
+        if (idGrupo <= 0)
+        {
+            var grupoDefault = new GrupoEstado
+            {
+                Nombre = "GENERAL",
+                Descripcion = "Grupo creado automaticamente para objetos del sistema.",
+                Activo = true
+            };
+
+            context.GrupoEstados.Add(grupoDefault);
+            await context.SaveChangesAsync();
+            idGrupo = grupoDefault.IdGrupoEstado;
+        }
+
+        var existentes = await context.ObjetoSistemas
+            .AsNoTracking()
+            .Select(o => o.NombreEntidad)
+            .ToListAsync();
+
+        var existentesSet = new HashSet<string>(existentes, StringComparer.OrdinalIgnoreCase);
+
+        var nuevos = ObjetoSistemaCatalogo.Items
+            .Select(i => i.NombreEntidad)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Where(nombre => !existentesSet.Contains(nombre))
+            .Select(nombre => new ObjetoSistema
+            {
+                NombreEntidad = nombre,
+                IdGrupoEstado = idGrupo
+            })
+            .ToList();
+
+        if (nuevos.Count == 0)
+            return;
+
+        context.ObjetoSistemas.AddRange(nuevos);
+        await context.SaveChangesAsync();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Seed de objetos del sistema omitido: {ex.Message}");
+    }
+}

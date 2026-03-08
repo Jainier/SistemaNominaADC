@@ -1,0 +1,98 @@
+﻿@page "/operaciones/mis-planillas"
+@attribute [Authorize]
+@using SistemaNominaADC.Entidades.DTOs
+
+<h3>Mis Planillas</h3>
+
+<TablaMantenimiento TItem="MiPlanillaHistorialItemDTO" Items="historial">
+    <ColumnsTemplate>
+        <RadzenDataGridColumn TItem="MiPlanillaHistorialItemDTO" Property="IdPlanilla" Title="Planilla" />
+        <RadzenDataGridColumn TItem="MiPlanillaHistorialItemDTO" Title="Periodo">
+            <Template Context="item">@($"{item.PeriodoInicio:dd/MM/yyyy} - {item.PeriodoFin:dd/MM/yyyy}")</Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="MiPlanillaHistorialItemDTO" Property="FechaPago" Title="Fecha Pago">
+            <Template Context="item">@item.FechaPago.ToString("dd/MM/yyyy")</Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="MiPlanillaHistorialItemDTO" Property="TipoPlanilla" Title="Tipo" />
+        <RadzenDataGridColumn TItem="MiPlanillaHistorialItemDTO" Property="EstadoPlanilla" Title="Estado" />
+        <RadzenDataGridColumn TItem="MiPlanillaHistorialItemDTO" Property="SalarioNeto" Title="Neto">
+            <Template Context="item">@item.SalarioNeto.ToString("N2")</Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="MiPlanillaHistorialItemDTO" Title="Acciones" Width="260px" Filterable="false" Sortable="false">
+            <Template Context="item">
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-primary" @onclick="() => VerDetalle(item.IdPlanilla)" @onclick:stopPropagation="true">Detalle</button>
+                    <button class="btn btn-sm btn-dark" @onclick="() => DescargarPdf(item.IdPlanilla)" @onclick:stopPropagation="true">PDF</button>
+                </div>
+            </Template>
+        </RadzenDataGridColumn>
+    </ColumnsTemplate>
+</TablaMantenimiento>
+
+@if (detalleActual is not null)
+{
+    <div class="card mt-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Detalle de Planilla #@detalleActual.IdPlanilla</span>
+            <button class="btn btn-sm btn-outline-secondary" @onclick="CerrarDetalle">Cerrar</button>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-3"><strong>Nombre:</strong> @detalleActual.NombreEmpleado</div>
+                <div class="col-md-3"><strong>Puesto:</strong> @detalleActual.Puesto</div>
+                <div class="col-md-3"><strong>Salario Base Mensual:</strong> @detalleActual.SalarioBaseMensual.ToString("N2")</div>
+                <div class="col-md-3"><strong>Periodo:</strong> @detalleActual.PeriodoInicio.ToString("dd/MM/yyyy") - @detalleActual.PeriodoFin.ToString("dd/MM/yyyy")</div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-3"><strong>Salario Base:</strong> @detalleActual.Detalle.SalarioBase.ToString("N2")</div>
+                <div class="col-md-3"><strong>Salario Bruto:</strong> @detalleActual.Detalle.SalarioBruto.ToString("N2")</div>
+                <div class="col-md-3"><strong>Total Ingresos:</strong> @detalleActual.Detalle.TotalIngresos.ToString("N2")</div>
+                <div class="col-md-3"><strong>Total Deducciones:</strong> @detalleActual.Detalle.TotalDeducciones.ToString("N2")</div>
+            </div>
+
+            <h6>Calculo Salario Bruto</h6>
+            <RadzenDataGrid TItem="NominaConceptoAplicadoDTO" Data="@conceptosBaseCcss" AllowFiltering="true" AllowSorting="true" AllowPaging="true" PageSize="8">
+                <Columns>
+                    <RadzenDataGridColumn TItem="NominaConceptoAplicadoDTO" Property="CodigoConcepto" Title="Codigo" />
+                    <RadzenDataGridColumn TItem="NominaConceptoAplicadoDTO" Property="NombreConcepto" Title="Concepto" />
+                    <RadzenDataGridColumn TItem="NominaConceptoAplicadoDTO" Title="%">
+                        <Template Context="row">@(row.PorcentajeAplicado.HasValue ? $"{(row.PorcentajeAplicado.Value * 100m):0.####}%" : "-")</Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="NominaConceptoAplicadoDTO" Title="Monto">
+                        <Template Context="row">@(row.EsDeduccion ? "-" : "+")@row.Monto.ToString("N2")</Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+
+            <h6 class="mt-3">Otros Ingresos</h6>
+            <RadzenDataGrid TItem="NominaConceptoAplicadoDTO" Data="@otrosIngresos" AllowFiltering="true" AllowSorting="true" AllowPaging="true" PageSize="8">
+                <Columns>
+                    <RadzenDataGridColumn TItem="NominaConceptoAplicadoDTO" Property="CodigoConcepto" Title="Codigo" />
+                    <RadzenDataGridColumn TItem="NominaConceptoAplicadoDTO" Property="NombreConcepto" Title="Concepto" />
+                    <RadzenDataGridColumn TItem="NominaConceptoAplicadoDTO" Title="%">
+                        <Template Context="row">@(row.PorcentajeAplicado.HasValue ? $"{(row.PorcentajeAplicado.Value * 100m):0.####}%" : "-")</Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="NominaConceptoAplicadoDTO" Title="Monto">
+                        <Template Context="row">+@row.Monto.ToString("N2")</Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+
+            <h6 class="mt-3">Otras Deducciones</h6>
+            <RadzenDataGrid TItem="NominaConceptoAplicadoDTO" Data="@otrasDeducciones" AllowFiltering="true" AllowSorting="true" AllowPaging="true" PageSize="8">
+                <Columns>
+                    <RadzenDataGridColumn TItem="NominaConceptoAplicadoDTO" Property="CodigoConcepto" Title="Codigo" />
+                    <RadzenDataGridColumn TItem="NominaConceptoAplicadoDTO" Property="NombreConcepto" Title="Concepto" />
+                    <RadzenDataGridColumn TItem="NominaConceptoAplicadoDTO" Title="%">
+                        <Template Context="row">@(row.PorcentajeAplicado.HasValue ? $"{(row.PorcentajeAplicado.Value * 100m):0.####}%" : "-")</Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="NominaConceptoAplicadoDTO" Title="Monto">
+                        <Template Context="row">-@row.Monto.ToString("N2")</Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        </div>
+    </div>
+}
+

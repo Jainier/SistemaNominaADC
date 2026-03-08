@@ -16,6 +16,7 @@ public class Asistencia
     public DateTime? HoraEntrada { get; set; }
     public DateTime? HoraSalida { get; set; }
     public bool? Ausencia { get; set; }
+    [StringLength(1000, ErrorMessage = "La justificación no debe exceder 1000 caracteres.")]
     public string? Justificacion { get; set; }
 
     [Range(1, int.MaxValue, ErrorMessage = "El estado es obligatorio.")]

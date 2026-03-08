@@ -73,12 +73,21 @@ namespace SistemaNominaADC.Negocio.Servicios
             {
                 if (entidad.IdEstado != 0)
                 {
-                    var existe = await _context.Estados.AnyAsync(e => e.IdEstado == entidad.IdEstado);
+                    var actual = await _context.Estados.AsNoTracking().FirstOrDefaultAsync(e => e.IdEstado == entidad.IdEstado);
+                    var existe = actual is not null;
                     if (!existe)
                         throw new NotFoundException($"No se encontró el estado con ID {entidad.IdEstado}.");
+
+                    if (actual?.Codigo is int codigoSistema && EsCodigoSistemaProtegido(codigoSistema))
+                    {
+                        throw new BusinessException($"El estado de sistema con codigo {codigoSistema} no se puede modificar.");
+                    }
                 }
 
-                if (idsGrupos.Any())
+                if (entidad.Codigo is int codigoNuevo && EsCodigoSistemaProtegido(codigoNuevo))
+                    throw new BusinessException($"El codigo {codigoNuevo} es reservado para estados de sistema y no puede crearse manualmente.");
+
+                if (idsGrupos.Count > 0)
                 {
                     var idsValidos = await _context.GrupoEstados
                         .Where(g => idsGrupos.Contains(g.IdGrupoEstado))
@@ -86,7 +95,7 @@ namespace SistemaNominaADC.Negocio.Servicios
                         .ToListAsync();
 
                     var idsInvalidos = idsGrupos.Except(idsValidos).ToList();
-                    if (idsInvalidos.Any())
+                    if (idsInvalidos.Count > 0)
                         throw new NotFoundException($"No se encontraron los grupos: {string.Join(", ", idsInvalidos)}.");
                 }
 
@@ -101,7 +110,7 @@ namespace SistemaNominaADC.Negocio.Servicios
                     .Where(x => x.IdEstado == entidad.IdEstado);
                 _context.GrupoEstadoDetalles.RemoveRange(actuales);
 
-                foreach (var idGrupo in idsGrupos)
+                foreach (var idGrupo in idsGrupos.Distinct())
                 {
                     _context.GrupoEstadoDetalles.Add(new GrupoEstadoDetalle
                     {
@@ -141,6 +150,9 @@ namespace SistemaNominaADC.Negocio.Servicios
             if (modelo == null)
                 throw new NotFoundException($"No se encontró el estado con ID {id}.");
 
+            if (modelo.Codigo is int codigoSistema && EsCodigoSistemaProtegido(codigoSistema))
+                throw new BusinessException($"El estado de sistema con codigo {codigoSistema} no se puede eliminar.");
+
             modelo.EstadoActivo = false;
             return await _context.SaveChangesAsync() > 0;
         }
@@ -157,9 +169,10 @@ namespace SistemaNominaADC.Negocio.Servicios
 
             return await _context.GrupoEstadoDetalles
                 .Where(gd => gd.IdGrupoEstado == objeto.IdGrupoEstado)
-                .Select(gd => new Estado
+                .Where(gd => gd.Estado != null)
+                .Select(gd => (Estado?)new Estado
                 {
-                    IdEstado = gd.Estado.IdEstado,
+                    IdEstado = gd.Estado!.IdEstado,
                     Codigo = gd.Estado.Codigo,
                     Nombre = gd.Estado.Nombre ?? string.Empty,
                     Descripcion = gd.Estado.Descripcion ?? string.Empty,
@@ -167,5 +180,9 @@ namespace SistemaNominaADC.Negocio.Servicios
                 })
                 .ToListAsync();
         }
+
+        private static bool EsCodigoSistemaProtegido(int codigo) =>
+            EstadoCodigosSistema.CodigosSistema.Contains(codigo) &&
+            codigo != EstadoCodigosSistema.Nulo;
     }
 }

@@ -3,8 +3,12 @@
 
 @attribute [Authorize]
 
-<h3>Catálogo de Departamentos</h3>
+<h3>Departamentos</h3>
 
+<div class="vista-segmentada mb-3" role="tablist" aria-label="Selector de vista">
+    <button type="button" class="segment-btn @(!mostrarFormulario ? "active" : string.Empty)" @onclick="Cancelar">Listado</button>
+    <button type="button" class="segment-btn @(mostrarFormulario ? "active" : string.Empty)" @onclick="Crear">Nuevo Registro</button>
+</div>
 @if (mostrarFormulario)
 {
     @* MODO EDICIÓN: Usamos el componente genérico de Formulario *@
@@ -32,11 +36,6 @@
 else
 {
     @* MODO LISTA *@
-    <div class="mb-3">
-        <button class="btn btn-primary" @onclick="Crear">
-            <i class="bi bi-plus-circle"></i> Nuevo Departamento
-        </button>
-    </div>
 
     <TablaMantenimiento TItem="Departamento"
                         Items="listaDepartamentos"
@@ -64,5 +63,9 @@ else
 
     </TablaMantenimiento>
 }
+
+
+
+
 
 

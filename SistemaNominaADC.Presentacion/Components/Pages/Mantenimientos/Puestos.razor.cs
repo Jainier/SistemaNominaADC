@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using SistemaNominaADC.Entidades;
+using SistemaNominaADC.Presentacion.Helpers;
 using SistemaNominaADC.Presentacion.Services.Http;
 
 namespace SistemaNominaADC.Presentacion.Components.Pages.Mantenimientos;
@@ -8,6 +9,7 @@ public partial class Puestos
 {
     [Inject] private IPuestoCliente PuestoCliente { get; set; } = null!;
     [Inject] private IDepartamentoCliente DepartamentoCliente { get; set; } = null!;
+    [Inject] private IEstadoCliente EstadoCliente { get; set; } = null!;
 
     private List<Puesto> listaPuestos = new();
     private List<Departamento> listaDepartamentos = new();
@@ -21,7 +23,13 @@ public partial class Puestos
     }
 
     private async Task CargarPuestos() => listaPuestos = await PuestoCliente.Lista();
-    private async Task CargarDepartamentos() => listaDepartamentos = await DepartamentoCliente.Lista();
+    private async Task CargarDepartamentos()
+    {
+        var idsActivos = EstadoActivoFiltro.ObtenerIdsActivos(await EstadoCliente.Lista());
+        listaDepartamentos = (await DepartamentoCliente.Lista())
+            .Where(x => EstadoActivoFiltro.EstaActivo(x.IdEstado, idsActivos))
+            .ToList();
+    }
     private void Crear() { puestoActual = new Puesto(); tituloFormulario = "Nuevo Puesto"; mostrarFormulario = true; }
     private void Editar(Puesto item) { puestoActual = item; tituloFormulario = "Editar Puesto"; mostrarFormulario = true; }
     private async Task Guardar() { if (await PuestoCliente.Guardar(puestoActual)) { mostrarFormulario = false; await CargarPuestos(); } }

@@ -46,12 +46,12 @@ public class PuestoService : IPuestoService
         var actual = await _context.Puestos.FirstOrDefaultAsync(x => x.IdPuesto == id)
             ?? throw new NotFoundException("Puesto no encontrado.");
 
-        var idEstadoActivo = await ObtenerIdEstadoPorNombre("Activo");
+        var idEstadoActivo = await EstadoSistemaHelper.ObtenerIdEstadoActivoAsync(_context);
         var empleadosActivos = await _context.Empleados.AnyAsync(e => e.IdPuesto == id && e.IdEstado == idEstadoActivo);
         if (empleadosActivos)
             throw new BusinessException("No se puede desactivar el puesto porque tiene empleados activos asociados.");
 
-        actual.IdEstado = await ObtenerIdEstadoPorNombre("Inactivo");
+        actual.IdEstado = await EstadoSistemaHelper.ObtenerIdEstadoInactivoAsync(_context);
         return await _context.SaveChangesAsync() > 0;
     }
 
@@ -66,13 +66,5 @@ public class PuestoService : IPuestoService
         if (!estadoExiste) throw new NotFoundException("Estado no encontrado.");
         var duplicado = await _context.Puestos.AnyAsync(p => p.IdDepartamento == modelo.IdDepartamento && p.Nombre == modelo.Nombre && p.IdPuesto != idActual);
         if (duplicado) throw new BusinessException("Ya existe un puesto con el mismo nombre en el departamento indicado.");
-    }
-
-    private async Task<int> ObtenerIdEstadoPorNombre(string nombre)
-    {
-        var estado = await _context.Estados.FirstOrDefaultAsync(e => e.Nombre == nombre);
-        if (estado == null)
-            throw new BusinessException($"No se encontró el estado '{nombre}'.");
-        return estado.IdEstado;
     }
 }

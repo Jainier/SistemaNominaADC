@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SistemaNominaADC.Api.Security;
+using SistemaNominaADC.Entidades;
 using SistemaNominaADC.Entidades.DTOs;
 using SistemaNominaADC.Negocio.Interfaces;
 
@@ -7,19 +9,24 @@ namespace SistemaNominaADC.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin,Administrador,ADMINISTRADOR")]
+    [Authorize]
     public class UsuariosController : ControllerBase
     {
         private readonly IUsuarioService _usuarioService;
+        private readonly IObjetoSistemaAuthorizationService _objetoAuthService;
 
-        public UsuariosController(IUsuarioService usuarioService)
+        public UsuariosController(IUsuarioService usuarioService, IObjetoSistemaAuthorizationService objetoAuthService)
         {
             _usuarioService = usuarioService;
+            _objetoAuthService = objetoAuthService;
         }
 
         [HttpGet]
         public async Task<IActionResult> ObtenerTodos()
         {
+            var acceso = await ValidarAccesoModuloAsync();
+            if (acceso != null) return acceso;
+
             var usuarios = await _usuarioService.ObtenerTodosAsync();
             return Ok(usuarios);
         }
@@ -27,6 +34,9 @@ namespace SistemaNominaADC.Api.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> ObtenerPorId(string id)
         {
+            var acceso = await ValidarAccesoModuloAsync();
+            if (acceso != null) return acceso;
+
             if (string.IsNullOrWhiteSpace(id))
                 return BadRequest("El id del usuario es invalido.");
 
@@ -37,6 +47,9 @@ namespace SistemaNominaADC.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> Crear([FromBody] UsuarioCreateDTO dto)
         {
+            var acceso = await ValidarAccesoModuloAsync();
+            if (acceso != null) return acceso;
+
             if (!ModelState.IsValid)
                 return ValidationProblem(ModelState);
 
@@ -47,6 +60,9 @@ namespace SistemaNominaADC.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Actualizar(string id, [FromBody] UsuarioUpdateDTO dto)
         {
+            var acceso = await ValidarAccesoModuloAsync();
+            if (acceso != null) return acceso;
+
             if (string.IsNullOrWhiteSpace(id))
                 return BadRequest("El id del usuario es invalido.");
 
@@ -60,6 +76,9 @@ namespace SistemaNominaADC.Api.Controllers
         [HttpPut("{id}/password")]
         public async Task<IActionResult> CambiarPassword(string id, [FromBody] UsuarioPasswordDTO dto)
         {
+            var acceso = await ValidarAccesoModuloAsync();
+            if (acceso != null) return acceso;
+
             if (string.IsNullOrWhiteSpace(id))
                 return BadRequest("El id del usuario es invalido.");
 
@@ -73,11 +92,20 @@ namespace SistemaNominaADC.Api.Controllers
         [HttpPatch("{id}/estado")]
         public async Task<IActionResult> CambiarEstado(string id, [FromBody] UsuarioEstadoDTO dto)
         {
+            var acceso = await ValidarAccesoModuloAsync();
+            if (acceso != null) return acceso;
+
             if (string.IsNullOrWhiteSpace(id))
                 return BadRequest("El id del usuario es invalido.");
 
             await _usuarioService.CambiarEstadoAsync(id, dto.Activo);
             return NoContent();
+        }
+
+        private async Task<IActionResult?> ValidarAccesoModuloAsync()
+        {
+            var autorizado = await _objetoAuthService.PuedeAccederModuloAsync(User, "Usuario");
+            return autorizado ? null : Forbid();
         }
     }
 }

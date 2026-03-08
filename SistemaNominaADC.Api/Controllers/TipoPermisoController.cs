@@ -23,7 +23,7 @@ public class TipoPermisoController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Lista()
     {
-        var acceso = await ValidarAccesoModuloAsync();
+        var acceso = await ValidarConsultaCatalogoAsync();
         if (acceso != null) return acceso;
 
         return Ok(await _service.Lista());
@@ -32,7 +32,7 @@ public class TipoPermisoController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Obtener(int id)
     {
-        var acceso = await ValidarAccesoModuloAsync();
+        var acceso = await ValidarConsultaCatalogoAsync();
         if (acceso != null) return acceso;
 
         if (id <= 0) return ValidationProblem(new ValidationProblemDetails(new Dictionary<string, string[]> { ["id"] = ["Id inválido"] }));
@@ -76,6 +76,12 @@ public class TipoPermisoController : ControllerBase
     private async Task<IActionResult?> ValidarAccesoModuloAsync()
     {
         var autorizado = await _objetoAuthService.PuedeAccederModuloAsync(User, "TipoPermiso");
+        return autorizado ? null : Forbid();
+    }
+
+    private async Task<IActionResult?> ValidarConsultaCatalogoAsync()
+    {
+        var autorizado = await _objetoAuthService.PuedeConsultarCatalogoAsync(User, "TipoPermiso");
         return autorizado ? null : Forbid();
     }
 }
